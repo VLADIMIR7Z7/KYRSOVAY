@@ -1,0 +1,15 @@
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\obj\Debug\Интерфейс курсач.csproj.AssemblyReference.cache
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\obj\Debug\Интерфейс_курсач.Properties.Resources.resources
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\obj\Debug\Интерфейс курсач.csproj.GenerateResource.cache
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\obj\Debug\Интерфейс курсач.csproj.CoreCompileInputs.cache
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\obj\Debug\FreightTransportSystem.CarManagerForm.resources
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\obj\Debug\FreightTransportSystem.ClientManagerForm.resources
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\obj\Debug\FreightTransportSystem.DriverManagerForm.resources
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\bin\Debug\Интерфейс курсач.exe.config
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\bin\Debug\Интерфейс курсач.exe
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\bin\Debug\Интерфейс курсач.pdb
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\obj\Debug\FreightTransportSystem.MainForm.resources
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\obj\Debug\FreightTransportSystem.TripManagerForm.resources
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\obj\Debug\Интерфейс курсач.exe
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\obj\Debug\Интерфейс курсач.pdb
+C:\Users\petru\source\repos\Интерфейс курсач\Интерфейс курсач\obj\Debug\FreightTransportSystem.OrderManagerForm.resources

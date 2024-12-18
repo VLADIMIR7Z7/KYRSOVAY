@@ -1,0 +1,5 @@
+A111TB;Tayota7;40000;Город;2001;2006;40000;C:\Users\petru\Downloads\дз5.jpg
+B555FR;Chery8;10000;Специальный;2006;2007;5000;C:\Users\petru\Downloads\дз5.jpg
+T986OP;Camry;6000;Бездорожье;2017;2022;1000;C:\Users\petru\Downloads\дз5.jpg
+M222BV;Leysan;6200;Специальное;1995;2007;1477;C:\Users\petru\Downloads\дз5.jpg
+М997ВВ;Polo;4777;Город;2008;2009;400000;C:\Users\petru\Downloads\дз5.jpg
