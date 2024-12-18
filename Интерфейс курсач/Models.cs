@@ -4,18 +4,19 @@ using System.Linq;
 
 namespace FreightTransportSystem
 {
+    // Класс, представляющий автомобиль
     public class Car
     {
-        public string LicensePlate { get; set; }
-        public string Brand { get; set; }
-        public double LoadCapacity { get; set; }
+        public string LicensePlate { get; set; } // Номер автомобиля
+        public string Brand { get; set; } // Марка автомобиля
+        public double LoadCapacity { get; set; } // Грузоподъемность автомобиля
+        public string Purpose { get; set; } // Назначение автомобиля
+        public int YearOfManufacture { get; set; } // Год выпуска автомобиля
+        public int YearOfRepair { get; set; } // Год последнего ремонта
+        public double Mileage { get; set; } // Пробег автомобиля
+        public string Photo { get; set; } // Путь к фотографии автомобиля
 
-        public string Purpose { get; set; }
-        public int YearOfManufacture { get; set; }
-        public int YearOfRepair { get; set; }
-        public double Mileage { get; set; }
-        public string Photo { get; set; }
-
+        // Конструктор для инициализации свойств автомобиля
         public Car(string licensePlate, string brand, double loadCapacity, string purpose, int yearOfManufacture, int yearOfRepair, double mileage, string photo)
         {
             LicensePlate = licensePlate;
@@ -28,21 +29,24 @@ namespace FreightTransportSystem
             Photo = photo;
         }
 
+        // Переопределение метода ToString для удобного отображения информации об автомобиле
         public override string ToString()
         {
             return $"{LicensePlate};{Brand};{LoadCapacity};{Purpose};{YearOfManufacture};{YearOfRepair};{Mileage};{Photo}";
         }
     }
 
+    // Класс, представляющий водителя
     public class Driver
     {
-        public string FullName { get; set; }
-        public string EmployeeNumber { get; set; }
-        public int YearOfBirth { get; set; }
-        public int Experience { get; set; }
-        public string Category { get; set; }
-        public string ClassType { get; set; }
+        public string FullName { get; set; } // Полное имя водителя
+        public string EmployeeNumber { get; set; } // Табельный номер водителя
+        public int YearOfBirth { get; set; } // Год рождения водителя
+        public int Experience { get; set; } // Стаж водителя
+        public string Category { get; set; } // Категория водительских прав
+        public string ClassType { get; set; } // Тип класса автомобиля, который может водить водитель
 
+        // Конструктор для инициализации свойств водителя
         public Driver(string fullName, string employeeNumber, int yearOfBirth, int experience, string category, string classType)
         {
             FullName = fullName;
@@ -53,33 +57,39 @@ namespace FreightTransportSystem
             ClassType = classType;
         }
 
+        // Переопределение метода ToString для удобного отображения информации о водителе
         public override string ToString()
         {
             return $"{FullName};{EmployeeNumber};{YearOfBirth};{Experience};{Category};{ClassType}";
         }
     }
 
+    // Абстрактный класс, представляющий клиента
     public abstract class Client
     {
-        public string ContactName { get; set; }
-        public string Phone { get; set; }
+        public string ContactName { get; set; } // Имя контактного лица
+        public string Phone { get; set; } // Телефон клиента
 
+        // Конструктор для инициализации свойств клиента
         public Client(string contactName, string phone)
         {
             ContactName = contactName;
             Phone = phone;
         }
 
+        // Абстрактный метод для переопределения в производных классах
         public abstract override string ToString();
     }
 
+    // Класс, представляющий индивидуального клиента
     public class IndividualClient : Client
     {
-        public string PassportSeries { get; set; }
-        public string PassportNumber { get; set; }
-        public DateTime IssueDate { get; set; }
-        public string IssuedBy { get; set; }
+        public string PassportSeries { get; set; } // Серия паспорта
+        public string PassportNumber { get; set; } // Номер паспорта
+        public DateTime IssueDate { get; set; } // Дата выдачи паспорта
+        public string IssuedBy { get; set; } // Кем выдан паспорт
 
+        // Конструктор для инициализации свойств индивидуального клиента
         public IndividualClient(string contactName, string phone, string passportSeries, string passportNumber, DateTime issueDate, string issuedBy)
             : base(contactName, phone)
         {
@@ -89,21 +99,24 @@ namespace FreightTransportSystem
             IssuedBy = issuedBy;
         }
 
+        // Переопределение метода ToString для удобного отображения информации об индивидуальном клиенте
         public override string ToString()
         {
             return $"{ContactName};{Phone};{PassportSeries};{PassportNumber};{IssueDate};{IssuedBy}";
         }
     }
 
+    // Класс, представляющий юридическое лицо
     public class LegalEntityClient : Client
     {
-        public string CompanyName { get; set; }
-        public string DirectorName { get; set; }
-        public string LegalAddress { get; set; }
-        public string BankName { get; set; }
-        public string AccountNumber { get; set; }
-        public string INN { get; set; }
+        public string CompanyName { get; set; } // Название компании
+        public string DirectorName { get; set; } // Имя директора
+        public string LegalAddress { get; set; } // Юридический адрес
+        public string BankName { get; set; } // Название банка
+        public string AccountNumber { get; set; } // Номер счета
+        public string INN { get; set; } // Идентификационный номер налогоплательщика
 
+        // Конструктор для инициализации свойств юридического лица
         public LegalEntityClient(string companyName, string directorName, string legalAddress, string phone, string bankName, string accountNumber, string inn)
             : base(directorName, phone) // Используем directorName как контактное имя
         {
@@ -115,22 +128,27 @@ namespace FreightTransportSystem
             INN = inn;
         }
 
+        // Переопределение метода ToString для удобного отображения информации о юридическом лице
         public override string ToString()
         {
             return $"{CompanyName};{DirectorName};{LegalAddress};{Phone};{BankName};{AccountNumber};{INN}";
         }
     }
 
+    // Класс, представляющий груз
     public class Cargo
     {
-        public string Name { get; set; }
-        public string Unit { get; set; }
-        public double Quantity { get; set; }
-        public double Weight { get; set; }
-        public double InsuranceValue { get; set; }
+        public int CargoId { get; set; }
+        public string Name { get; set; } // Название груза
+        public string Unit { get; set; } // Единица измерения
+        public double Quantity { get; set; } // Количество груза
+        public double Weight { get; set; } // Вес груза
+        public double InsuranceValue { get; set; } // Страховая стоимость груза
 
-        public Cargo(string name, string unit, double quantity, double weight, double insuranceValue)
+        // Конструктор для инициализации свойств груза
+        public Cargo(int cargoId, string name, string unit, double quantity, double weight, double insuranceValue)
         {
+            CargoId = cargoId; // Исправлено: теперь присваиваем значение правильно
             Name = name;
             Unit = unit;
             Quantity = quantity;
@@ -138,25 +156,30 @@ namespace FreightTransportSystem
             InsuranceValue = insuranceValue;
         }
 
+        // Переопределение метода ToString для удобного отображения информации о грузе
         public override string ToString()
         {
             return $"{Name};{Unit};{Quantity};{Weight};{InsuranceValue}";
         }
     }
 
+    // Класс, представляющий заказ на грузоперевозку
     public class CargoOrder
     {
-        public DateTime OrderDate { get; }
-        public string SenderName { get; }
-        public string LoadingAddress { get; }
-        public string ReceiverName { get; }
-        public string UnloadingAddress { get; }
-        public double RouteLength { get; }
-        public double OrderCost { get; }
-        public List<Cargo> CargoList { get; }
+        public int OrderId { get; set; } // Номер заказа
+        public DateTime OrderDate { get; set; } // Дата заказа
+        public string SenderName { get; set; } // Имя отправителя
+        public string LoadingAddress { get; set; } // Адрес погрузки
+        public string ReceiverName { get; set; } // Имя получателя
+        public string UnloadingAddress { get; set; } // Адрес разгрузки
+        public double RouteLength { get; set; } // Длина маршрута
+        public double OrderCost { get; set; } // Стоимость заказа
+        public List<Cargo> CargoList { get; set;  } // Список грузов в заказе
 
-        public CargoOrder(DateTime orderDate, string senderName, string loadingAddress, string receiverName, string unloadingAddress, double routeLength, double orderCost, List<Cargo> cargoList)
+        // Конструктор для инициализации свойств заказа
+        public CargoOrder(int orderId, DateTime orderDate, string senderName, string loadingAddress, string receiverName, string unloadingAddress, double routeLength, double orderCost, List<Cargo> cargoList)
         {
+            OrderId = orderId; // Инициализация номера заказа
             OrderDate = orderDate;
             SenderName = senderName;
             LoadingAddress = loadingAddress;
@@ -167,27 +190,30 @@ namespace FreightTransportSystem
             CargoList = cargoList;
         }
 
+        // Переопределение метода ToString для удобного отображения информации о заказе
         public override string ToString()
         {
             string cargoDetails = string.Join(",", CargoList.Select(c => c.ToString())); // Преобразуем список грузов в строку
-            return $"{OrderDate};{SenderName};{LoadingAddress};{ReceiverName};{UnloadingAddress};{RouteLength};{OrderCost};{cargoDetails}";
+            return $"{OrderId};{OrderDate};{SenderName};{LoadingAddress};{ReceiverName};{UnloadingAddress};{RouteLength};{OrderCost};{cargoDetails}";
         }
     }
 
-
-
-
+    // Класс, представляющий поездку
     public class Trip
     {
         public string LicensePlate { get; set; }
         public DateTime ArrivalTime { get; set; }
-        public string DriverFullName { get; set; } // Изменено с DriverCount на DriverFullName
-
-        public Trip(string licensePlate, DateTime arrivalTime, string driverFullName)
+        public string DriverFullName { get; set; }
+        public string OrderNumber { get; set; }
+        
+        // Конструктор
+        public Trip(string licensePlate, DateTime arrivalTime, string driverFullName, string orderNumber)
         {
             LicensePlate = licensePlate;
             ArrivalTime = arrivalTime;
-            DriverFullName = driverFullName; // Сохраняем ФИО водителя
+            DriverFullName = driverFullName;
+            OrderNumber = orderNumber;
+           
         }
     }
 }

@@ -1,24 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using FreightTransportSystem; // Подключение пространства имен для работы с системой грузоперевозок
+using System.Collections.Generic; // Подключение пространства имен для работы с коллекциями
 
-namespace FreightTransportSystem
+public static class OrderManager
 {
-    public static class OrderManager
+    // Список для хранения всех заказов на грузоперевозки
+    private static List<CargoOrder> orders = new List<CargoOrder>();
+
+    // Метод для получения списка всех заказов
+    public static List<CargoOrder> GetOrders() => orders;
+
+    // Метод для добавления нового заказа в список
+    public static void AddOrder(CargoOrder order)
     {
-        private static List<CargoOrder> orders = new List<CargoOrder>();
+        orders.Add(order); // Добавление заказа в список
+    }
 
-        public static List<CargoOrder> GetOrders() => orders;
-
-        public static void AddOrder(CargoOrder order)
-        {
-            orders.Add(order);
-        }
-
-        public static void RemoveOrder(DateTime orderDate)
-        {
-            orders.RemoveAll(o => o.OrderDate == orderDate);
-        }
-
-
+    // Метод для удаления заказа по его идентификатору
+    public static void RemoveOrder(int orderId)
+    {
+        // Удаление заказа по номеру заказа
+        orders.RemoveAll(o => o.OrderId == orderId);
     }
 }

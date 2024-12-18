@@ -146,37 +146,40 @@ namespace FreightTransportSystem
                 foreach (string line in lines)
                 {
                     string[] parts = line.Split(';');
-                    if (parts.Length >= 7) // Ожидаем минимум 7 частей для CargoOrder
+                    if (parts.Length >= 8) // Ожидаем минимум 8 частей для CargoOrder (включая OrderId)
                     {
                         try
                         {
-                            DateTime orderDate = Convert.ToDateTime(parts[0]);
-                            string senderName = parts[1];
-                            string loadingAddress = parts[2];
-                            string receiverName = parts[3];
-                            string unloadingAddress = parts[4];
-                            double routeLength = Convert.ToDouble(parts[5]);
-                            double orderCost = Convert.ToDouble(parts[6]);
+                            int orderId = Convert.ToInt32(parts[0]); // Считываем номер заказа
+                            DateTime orderDate = Convert.ToDateTime(parts[1]);
+                            string senderName = parts[2];
+                            string loadingAddress = parts[3];
+                            string receiverName = parts[4];
+                            string unloadingAddress = parts[5];
+                            double routeLength = Convert.ToDouble(parts[6]);
+                            double orderCost = Convert.ToDouble(parts[7]);
 
                             // Создаем новый заказ
-                            CargoOrder newOrder = new CargoOrder(orderDate, senderName, loadingAddress, receiverName, unloadingAddress, routeLength, orderCost, new List<Cargo>());
+                            CargoOrder newOrder = new CargoOrder(orderId, orderDate, senderName, loadingAddress, receiverName, unloadingAddress, routeLength, orderCost, new List<Cargo>());
 
                             // Если есть информация о грузах, разбираем ее
-                            if (parts.Length > 7)
+                            if (parts.Length > 8)
                             {
-                               
-                               for (int i = 7;i < parts.Count() - 1; i=i+5)
+                                for (int i = 8; i < parts.Length; i += 5)
                                 {
                                     string cargoName = parts[i];
-                                    string cargoUnit = parts[i+1];
-                                    double cargoQuantity = Convert.ToDouble(parts[i+2]);
-                                    double cargoWeight = Convert.ToDouble(parts[i+3]);
-                                    double cargoInsuranceValue = Convert.ToDouble(parts[i+4]);
+                                    string cargoUnit = parts[i + 1];
+                                    double cargoQuantity = Convert.ToDouble(parts[i + 2]);
+                                    double cargoWeight = Convert.ToDouble(parts[i + 3]);
+                                    double cargoInsuranceValue = Convert.ToDouble(parts[i + 4]);
 
-                                    Cargo newCargo = new Cargo(cargoName, cargoUnit, cargoQuantity, cargoWeight, cargoInsuranceValue);
+                                    // Генерация нового уникального номера груза
+                                    int cargoId = newOrder.CargoList.Any() ? newOrder.CargoList.Max(c => c.CargoId) + 1 : 1;
+
+                                    // Создаем новый объект Cargo
+                                    Cargo newCargo = new Cargo(cargoId, cargoName, cargoUnit, cargoQuantity, cargoWeight, cargoInsuranceValue);
                                     newOrder.CargoList.Add(newCargo);
                                 }
-                                
                             }
 
                             OrderManager.AddOrder(newOrder); // Добавляем заказ в менеджер заказов
@@ -208,7 +211,8 @@ namespace FreightTransportSystem
                         cargoInfo = string.Join(";", order.CargoList.Select(c => $"{c.Name};{c.Unit};{c.Quantity};{c.Weight};{c.InsuranceValue}"));
                     }
 
-                    string line = $"{order.OrderDate};{order.SenderName};{order.LoadingAddress};{order.ReceiverName};{order.UnloadingAddress};{order.RouteLength};{order.OrderCost}";
+                    // Формируем строку с номером заказа
+                    string line = $"{order.OrderId};{order.OrderDate};{order.SenderName};{order.LoadingAddress};{order.ReceiverName};{order.UnloadingAddress};{order.RouteLength};{order.OrderCost}";
 
                     // Если есть информация о грузе, добавляем ее к строке
                     if (!string.IsNullOrEmpty(cargoInfo))
@@ -235,15 +239,16 @@ namespace FreightTransportSystem
                     string[] parts = line.Split(';');
 
                     // Проверка корректности формата даты
-                    if (parts.Length == 3 && DateTime.TryParse(parts[2], out DateTime arrivalTime))
+                    if (parts.Length == 4 && DateTime.TryParse(parts[2], out DateTime arrivalTime)) // Изменено на 4
                     {
                         string licensePlate = parts[0];
-                        string driverFullName = parts[1]; // Исправлено: убрано преобразование в int
+                        string driverFullName = parts[1];
+                        string orderNumber = parts[3]; // Получаем номер заказа
 
                         // Проверка на дубликаты перед добавлением
-                        if (!TripManager.GetTrips().Any(trip => trip.LicensePlate == licensePlate && trip.DriverFullName == driverFullName && trip.ArrivalTime == arrivalTime))
+                        if (!TripManager.GetTrips().Any(trip => trip.LicensePlate == licensePlate && trip.DriverFullName == driverFullName && trip.ArrivalTime == arrivalTime && trip.OrderNumber == orderNumber))
                         {
-                            Trip newTrip = new Trip(licensePlate, arrivalTime, driverFullName);
+                            Trip newTrip = new Trip(licensePlate, arrivalTime, driverFullName, orderNumber); // Передаем номер заказа
                             TripManager.GetTrips().Add(newTrip);
                         }
                         else
@@ -267,7 +272,7 @@ namespace FreightTransportSystem
             {
                 foreach (Trip trip in TripManager.GetTrips())
                 {
-                    writer.WriteLine($"{trip.LicensePlate};{trip.DriverFullName};{trip.ArrivalTime}");
+                    writer.WriteLine($"{trip.LicensePlate};{trip.DriverFullName};{trip.ArrivalTime};{trip.OrderNumber}"); // Добавляем номер заказа
                 }
             }
         }

@@ -3,53 +3,62 @@ using System.Windows.Forms;
 
 namespace FreightTransportSystem
 {
+    // Главная форма приложения для управления различными аспектами грузоперевозок
     public partial class MainForm : Form
     {
-        private Button btnManageCars;
-        private Button btnManageOrders;
-        private Button btnManageTrips;
-        private Button btnManageClients;
-        private Button btnManageDrivers;
-        private Button btnExit;
+        // Кнопки для управления различными функциями приложения
+        private Button btnManageCars; // Кнопка для управления автомобилями
+        private Button btnManageOrders; // Кнопка для управления заказами
+        private Button btnManageTrips; // Кнопка для управления поездками
+        private Button btnManageClients; // Кнопка для управления клиентами
+        private Button btnManageDrivers; // Кнопка для управления водителями
+        private Button btnExit; // Кнопка для выхода из приложения
 
+        // Конструктор главной формы
         public MainForm()
         {
-            InitializeComponent();
+            InitializeComponent(); // Инициализация компонентов формы
         }
 
+        // Обработчик события нажатия кнопки "Управление автомобилями"
         private void btnManageCars_Click_1(object sender, EventArgs e)
         {
-            CarManagerForm carManager = new CarManagerForm();
-            carManager.ShowDialog();
+            CarManagerForm carManager = new CarManagerForm(); // Создание экземпляра формы управления автомобилями
+            carManager.ShowDialog(); // Отображение формы как модального диалогового окна
         }
 
+        // Обработчик события нажатия кнопки "Управление водителями"
         private void btnManageDrivers_Click_1(object sender, EventArgs e)
         {
-            DriverManagerForm driverManager = new DriverManagerForm();
-            driverManager.ShowDialog();
+            DriverManagerForm driverManager = new DriverManagerForm(); // Создание экземпляра формы управления водителями
+            driverManager.ShowDialog(); // Отображение формы как модального диалогового окна
         }
 
+        // Обработчик события нажатия кнопки "Управление клиентами"
         private void btnManageClients_Click_1(object sender, EventArgs e)
         {
-            ClientManagerForm clientManager = new ClientManagerForm();
-            clientManager.ShowDialog();
+            ClientManagerForm clientManager = new ClientManagerForm(); // Создание экземпляра формы управления клиентами
+            clientManager.ShowDialog(); // Отображение формы как модального диалогового окна
         }
 
+        // Обработчик события нажатия кнопки "Управление заказами"
         private void btnManageOrders_Click_1(object sender, EventArgs e)
         {
-            OrderManagerForm orderManager = new OrderManagerForm();
-            orderManager.ShowDialog();
+            OrderManagerForm orderManager = new OrderManagerForm(); // Создание экземпляра формы управления заказами
+            orderManager.ShowDialog(); // Отображение формы как модального диалогового окна
         }
 
+        // Обработчик события нажатия кнопки "Управление поездками"
         private void btnManageTrips_Click_1(object sender, EventArgs e)
         {
-            TripManagerForm tripManager = new TripManagerForm();
-            tripManager.ShowDialog();
+            TripManagerForm tripManager = new TripManagerForm(); // Создание экземпляра формы управления поездками
+            tripManager.ShowDialog(); // Отображение формы как модального диалогового окна
         }
 
+        // Обработчик события нажатия кнопки "Выход"
         private void btnExit_Click_1(object sender, EventArgs e)
         {
-            this.Close();
+            this.Close(); // Закрытие главной формы и завершение приложения
         }
 
         private void InitializeComponent()
