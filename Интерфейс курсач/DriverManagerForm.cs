@@ -573,12 +573,11 @@ namespace FreightTransportSystem
                     }
 
                     // Проверка табельного номера
-                    string newEmployeeNumber = txtEmployeeNumber.Text.Trim();
-                    if (string.IsNullOrWhiteSpace(newEmployeeNumber))
+                    if (string.IsNullOrWhiteSpace(employeeNumber))
                     {
                         errors.Add("Ошибка ввода в поле Табельный номер: поле не может быть пустым.");
                     }
-                    else if (!Regex.IsMatch(newEmployeeNumber, @"^\d{1,6}$"))
+                    else if (!Regex.IsMatch(employeeNumber, @"^\d{1,6}$"))
                     {
                         errors.Add("Ошибка ввода в поле Табельный номер: Табельный номер должен содержать только цифры и не превышать 6 символов.");
                     }
@@ -605,12 +604,6 @@ namespace FreightTransportSystem
                         errors.Add("Ошибка: необходимо выбрать класс.");
                     }
 
-                    // Проверка года рождения
-                    if (yearOfBirth < 1900 || yearOfBirth > DateTime.Now.Year)
-                    {
-                        errors.Add("Ошибка ввода в поле Год Рождения: год должен быть в диапазоне от 1900 до текущего года.");
-                    }
-
                     // Если есть ошибки, выводим их в сообщении
                     if (errors.Count > 0)
                     {
@@ -621,7 +614,7 @@ namespace FreightTransportSystem
 
                     // Обновление информации о водителе
                     driverToEdit.FullName = fullName;
-                    driverToEdit.EmployeeNumber = newEmployeeNumber; // Обновление табельного номера
+                    driverToEdit.EmployeeNumber = employeeNumber; // Обновление табельного номера
 
                     // В алидация стажа перед обновлением
                     if (int.TryParse(experience, out int experienceInt) && experienceInt >= 1 && experienceInt <= 99)

@@ -1023,24 +1023,24 @@ namespace FreightTransportSystem
                     List<string> errors = new List<string>(); // Список для хранения ошибок валидации
 
                     // Проверка корректности ввода
-                    if (!IsValidContactName(txtContactName.Text))
+                    if (!IsValidContactName(contactName))
                     {
-                        errors.Add("ФИО должно содержать только буквы и пробелы.");
+                        throw new Exception("ФИО должно содержать только буквы и пробелы.");
                     }
 
                     if (!IsValidPhone(phone))
                     {
-                        errors.Add("Телефон должен содержать 11 цифр.");
+                        throw new Exception("Телефон должен содержать 11 цифр.");
                     }
 
-                    if (!IsValidPassportSeries(passportSeries)) // Проверка серии паспорта
+                    if (!IsValidPassportSeries(passportSeries)) // Изменено на проверку серии паспорта
                     {
-                        errors.Add("Серия паспорта должна содержать 4 цифры.");
+                        throw new Exception("Серия паспорта должна содержать 4 цифры.");
                     }
 
                     if (!IsValidPassportNumber(passportNumber))
                     {
-                        errors.Add("Номер паспорта должен содержать 10 цифр.");
+                        throw new Exception("Номер паспорта должен содержать 10 цифр.");
                     }
 
                     // Если есть ошибки, выводим их в сообщении
@@ -1111,26 +1111,30 @@ namespace FreightTransportSystem
 
                     List<string> errors = new List<string>(); // Список для хранения ошибок валидации
 
-                    // Проверка корректности ввода
-                    if (string.IsNullOrWhiteSpace(newCompanyName))
+                    if (!IsValidINN(inn))
                     {
-                        errors.Add("Пожалуйста, заполните поле 'Название компании'.");
+                        throw new Exception("ИНН должен содержать 10 цифр.");
                     }
+
+                    // Проверка корректности ввода
                     if (!IsValidPhone(phone))
                     {
-                        errors.Add("Телефон должен содержать 11 цифр.");
+                        throw new Exception("Телефон должен содержать 11 цифр.");
                     }
+
                     if (!IsOnlyLetters(directorName) && !directorName.All(c => char.IsLetter(c) || char.IsWhiteSpace(c)))
                     {
-                        errors.Add("ФИО директора должно содержать только буквы и пробелы.");
+                        throw new Exception("ФИО директора должно содержать только буквы и пробелы.");
                     }
+
                     if (!IsValidAccountNumber(accountNumber))
                     {
-                        errors.Add("Расчетный счет должен содержать 20 цифр.");
+                        throw new Exception("Расчетный счет должен содержать 20 цифр.");
                     }
-                    if (!IsValidINN(inn)) // Проверка на корректность ИНН
+
+                    if (!IsOnlyDigits(inn))
                     {
-                        errors.Add("ИНН должен содержать 10 цифр.");
+                        throw new Exception("ИНН должен содержать только цифры.");
                     }
 
                     // Если есть ошибки, выводим их в сообщении

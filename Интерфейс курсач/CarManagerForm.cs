@@ -287,43 +287,36 @@ namespace FreightTransportSystem
 
                         List<string> errors = new List<string>(); // Список для хранения ошибок валидации
 
-                        // Проверка номера автомобиля
                         if (!Regex.IsMatch(licensePlate, @"^[a-zA-Zа-яА-Я0-9]{1,9}$"))
                         {
                             errors.Add("Номер автомобиля должен содержать только буквы и цифры и не превышать 9 символов.");
                         }
 
-                        // Проверка марки
                         if (!Regex.IsMatch(brand, @"^[a-zA-Zа-яА-Я0-9]{1,30}$"))
                         {
                             errors.Add("Марка должна содержать только буквы и цифры и не превышать 30 символов.");
                         }
 
-                        // Проверка грузоподъемности
                         if (!Regex.IsMatch(loadCapacity, @"^[0-9]{1,5}$") || int.Parse(loadCapacity) > 40000)
                         {
                             errors.Add("Грузоподъемность должна быть целым числом от 1 до 40000.");
                         }
 
-                        // Проверка назначения
                         if (!Regex.IsMatch(purpose, @"^[a-zA-Zа-яА-Я]+$"))
                         {
                             errors.Add("Назначение должно содержать только буквы.");
                         }
 
-                        // Проверка года выпуска
                         if (!Regex.IsMatch(yearOfManufacture, @"^[0-9]{4}$"))
                         {
                             errors.Add("Год выпуска должен быть целым числом из 4 цифр.");
                         }
 
-                        // Проверка года ремонта
                         if (!Regex.IsMatch(yearOfRepair, @"^[0-9]{4}$"))
                         {
                             errors.Add("Год ремонта должен быть целым числом из 4 цифр.");
                         }
 
-                        // Проверка пробега
                         if (!Regex.IsMatch(mileage, @"^[0-9]{1,7}$") || int.Parse(mileage) > 1000000)
                         {
                             errors.Add("Пробег должен быть целым числом от 1 до 1000000.");

@@ -425,25 +425,48 @@ namespace FreightTransportSystem
         // Обработчик события нажатия на ячейку в DataGridView для заказов
         private void dataGridViewOrders_CellContentClick_1(object sender, DataGridViewCellEventArgs e)
         {
-            if (dataGridViewOrders.SelectedRows.Count > 0)
+            try
             {
-                var selectedRow = dataGridViewOrders.SelectedRows[0];
-                int orderId = (int)selectedRow.Cells["OrderId"].Value;
+                if (dataGridViewOrders.SelectedRows.Count > 0)
+                {
+                    var selectedRow = dataGridViewOrders.SelectedRows[0];
 
-                // Заполняем поля ввода данными из выбранного заказа
-                dtpOrderDate.Value = (DateTime)selectedRow.Cells["OrderDate"].Value;
-                txtSenderName.Text = selectedRow.Cells["SenderName"].Value?.ToString();
-                txtLoadingAddress.Text = selectedRow.Cells["LoadingAddress"].Value?.ToString();
-                txtReceiverName.Text = selectedRow.Cells["ReceiverName"].Value?.ToString();
-                txtUnloadingAddress.Text = selectedRow.Cells["UnloadingAddress"].Value?.ToString();
-                txtRouteLength.Text = selectedRow.Cells["RouteLength"].Value?.ToString();
-                txtOrderCost.Text = selectedRow.Cells["OrderCost"].Value?.ToString();
-                txtOrderId.Text = orderId.ToString(); // Сохраняем номер заказа для редактирования
-                                                      // Загружаем грузы, связанные с выбранным заказом
-                LoadCargoForOrder(orderId);
+                    // Проверяем, что ячейка OrderId не равна null
+                    if (selectedRow.Cells["OrderId"].Value != null)
+                    {
+                        int orderId = (int)selectedRow.Cells["OrderId"].Value;
+
+                        // Заполняем поля ввода данными из выбранного заказа
+                        dtpOrderDate.Value = selectedRow.Cells["OrderDate"].Value != null
+                            ? (DateTime)selectedRow.Cells["OrderDate"].Value
+                            : DateTime.Now; // Установите значение по умолчанию, если null
+
+                        txtSenderName.Text = selectedRow.Cells["SenderName"].Value?.ToString() ?? string.Empty;
+                        txtLoadingAddress.Text = selectedRow.Cells["LoadingAddress"].Value?.ToString() ?? string.Empty;
+                        txtReceiverName.Text = selectedRow.Cells["ReceiverName"].Value?.ToString() ?? string.Empty;
+                        txtUnloadingAddress.Text = selectedRow.Cells["UnloadingAddress"].Value?.ToString() ?? string.Empty;
+                        txtRouteLength.Text = selectedRow.Cells["RouteLength"].Value?.ToString() ?? string.Empty;
+                        txtOrderCost.Text = selectedRow.Cells["OrderCost"].Value?.ToString() ?? string.Empty;
+                        txtOrderId.Text = orderId.ToString(); // Сохраняем номер заказа для редактирования
+
+                        // Загружаем грузы, связанные с выбранным заказом
+                        LoadCargoForOrder(orderId);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Выбранный заказ не имеет идентификатора. Пожалуйста, выберите другой заказ.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+            }
+            catch (NullReferenceException ex)
+            {
+                MessageBox.Show("Произошла ошибка: " + ex.Message + ". Пожалуйста, убедитесь, что все данные корректны.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Произошла непредвиденная ошибка: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
 
 
         private void InitializeComponent()
