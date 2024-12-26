@@ -9,46 +9,43 @@ namespace FreightTransportSystem
     // Форма для управления водителями
     public partial class DriverManagerForm : Form
     {
-        // Элементы управления для ввода данных о водителе
-        private TextBox txtFullName; // Полное имя водителя
-        private TextBox txtExperience; // Стаж водителя
-        private TextBox txtEmployeeNumber; // Табельный номер водителя
-        private DateTimePicker dtpYearOfBirth; // Дата рождения водителя
+        private TextBox txtFullName; 
+        private TextBox txtExperience; 
+        private TextBox txtEmployeeNumber; 
+        private DateTimePicker dtpYearOfBirth; 
 
-        // Метки для отображения информации
-        private Label lblFullName; // Метка для полного имени
-        private Label lblEmployeeNumber; // Метка для табельного номера
-        private Label lblExperience; // Метка для стажа
-        private Label lblClassType; // Метка для класса
-        private Label lblYearOfBirth; // Метка для года рождения
+        private Label lblFullName; 
+        private Label lblEmployeeNumber; 
+        private Label lblExperience; 
+        private Label lblClassType; 
+        private Label lblYearOfBirth; 
 
-        // Кнопки для управления водителями
-        private Button btnAddDriver; // Кнопка для добавления водителя
-        private Button btnRemoveDriver; // Кнопка для удаления водителя
-        private Button btnClearFields; // Кнопка для очистки полей ввода
+        private Button btnAddDriver; 
+        private Button btnRemoveDriver; 
+        private Button btnClearFields; 
 
-        // Столбцы для DataGridView с информацией о водителях
-        private DataGridViewTextBoxColumn colFullName; // Столбец для полного имени
-        private DataGridViewTextBoxColumn colEmployeeNumber; // Столбец для табельного номера
-        private DataGridViewTextBoxColumn colYearOfBirth; // Столбец для года рождения
-        private DataGridViewTextBoxColumn colExperience; // Столбец для стажа
-        private DataGridViewTextBoxColumn colCategory; // Столбец для категории
-        private DataGridViewTextBoxColumn colClassType; // Столбец для класса
+        
+        private DataGridViewTextBoxColumn colFullName; 
+        private DataGridViewTextBoxColumn colEmployeeNumber; 
+        private DataGridViewTextBoxColumn colYearOfBirth; 
+        private DataGridViewTextBoxColumn colExperience; 
+        private DataGridViewTextBoxColumn colCategory; 
+        private DataGridViewTextBoxColumn colClassType; 
         private CheckedListBox clbCategories;
         private Label lblCategory;
         private ComboBox cmbClassTypes;
         private Button btnEditDriver;
         private Label label1;
-        private Label label2;
+        private Button btnSaveChanges;
 
-        // DataGridView для отображения списка водителей
         private DataGridView dataGridViewDrivers;
 
         // Конструктор формы
         public DriverManagerForm()
         {
-            InitializeComponent(); // Инициализация компонентов формы
-            LoadDrivers(); // Загрузка списка водителей при инициализации формы
+            InitializeComponent(); 
+            LoadDrivers(); 
+            ClearFields();
         }
 
         // Метод для загрузки водителей в DataGridView
@@ -62,14 +59,14 @@ namespace FreightTransportSystem
             }
         }
 
-        // Метод для очистки полей ввода
+        
         private void ClearFields()
         {
-            txtFullName.Clear(); // Очистка поля полного имени
-            txtEmployeeNumber.Clear(); // Очистка поля табельного номера
-            dtpYearOfBirth.Value = DateTime.Now; // Установка текущей даты в поле даты рождения
-            txtExperience.Clear(); // Очистка поля стажа         
-            clbCategories.ClearSelected(); // Очистка выбранных категорий
+            txtFullName.Clear(); 
+            txtEmployeeNumber.Clear(); 
+            dtpYearOfBirth.Value = DateTime.Now; 
+            txtExperience.Clear();         
+            clbCategories.ClearSelected(); 
 
             // Очистка выбранных категорий
             for (int i = 0; i < clbCategories.Items.Count; i++)
@@ -80,7 +77,7 @@ namespace FreightTransportSystem
             cmbClassTypes.SelectedIndex = -1; // Сброс выбора класса
         }
 
-        // Обработчик события нажатия кнопки "Добавить водителя"
+       
         private void btnAddDriver_Click_1(object sender, EventArgs e)
         {
             try
@@ -89,10 +86,10 @@ namespace FreightTransportSystem
                 string fullName = txtFullName.Text.Trim();
                 string employeeNumber = txtEmployeeNumber.Text.Trim();
                 string experience = txtExperience.Text.Trim();
-                string category = string.Join(", ", clbCategories.CheckedItems.Cast<string>()); // Получение выбранных категорий
-                string classType = cmbClassTypes.SelectedItem?.ToString(); // Получение выбранного класса
+                string category = string.Join(", ", clbCategories.CheckedItems.Cast<string>()); 
+                string classType = cmbClassTypes.SelectedItem?.ToString(); 
 
-                List<string> errors = new List<string>(); // Список для хранения ошибок валидации
+                List<string> errors = new List<string>(); 
 
                 // Проверка ФИО
                 if (string.IsNullOrWhiteSpace(fullName))
@@ -146,10 +143,10 @@ namespace FreightTransportSystem
 
                 // Преобразование стажа в целое число и создание нового водителя
                 int experienceInt = Convert.ToInt32(experience);
-                Driver newDriver = new Driver(fullName, employeeNumber, dtpYearOfBirth.Value.Year, experienceInt, category, classType);
+                Driver newDriver = new Driver(fullName, employeeNumber, dtpYearOfBirth.Value.Year, experienceInt, category, classType); // Создание нового водителя
                 DriverManager.GetDrivers().Add(newDriver); // Добавление нового водителя в список
-                LoadDrivers(); // Обновление списка водителей в DataGridView
-                ClearFields(); // Очистка полей ввода
+                LoadDrivers(); 
+                ClearFields(); 
             }
             catch (FormatException)
             {
@@ -174,8 +171,8 @@ namespace FreightTransportSystem
                     if (driverToRemove != null) // Если водитель найден
                     {
                         DriverManager.GetDrivers().Remove(driverToRemove); // Удаление водителя из списка
-                        LoadDrivers(); // Обновление списка водителей в DataGridView
-                        ClearFields(); // Очистка полей ввода
+                        LoadDrivers(); 
+                        ClearFields(); 
                     }
                     else
                     {
@@ -193,62 +190,170 @@ namespace FreightTransportSystem
             }
         }
 
+        private void btnEditDriver_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewDrivers.SelectedRows.Count > 0) // Проверка, выбрана ли строка
+            {
+                var selectedRow = dataGridViewDrivers.SelectedRows[0]; // Получение выбранной строки
+
+                // Проверка на наличие табельного номера
+                if (selectedRow.Cells["colEmployeeNumber"].Value != null)
+                {
+                    string employeeNumber = selectedRow.Cells["colEmployeeNumber"].Value.ToString();  // Получаем табельный номер 
+                    Driver driverToEdit = DriverManager.FindDriver(employeeNumber); // Поиск водителя по табельному номеру
+
+                    if (driverToEdit != null) // Если водитель найден
+                    {
+                        // Заполняем текстовые поля данными из объекта
+                        txtFullName.Text = driverToEdit.FullName;
+                        txtExperience.Text = driverToEdit.Experience.ToString();
+                        txtEmployeeNumber.Text = driverToEdit.EmployeeNumber;
+                        cmbClassTypes.SelectedItem = driverToEdit.ClassType; 
+                        dtpYearOfBirth.Value = new DateTime(driverToEdit.YearOfBirth, 1, 1); 
+
+                        // Установка выбранных категорий
+                        for (int i = 0; i < clbCategories.Items.Count; i++)
+                        {
+                            clbCategories.SetItemChecked(i, driverToEdit.Category.Contains(clbCategories.Items[i].ToString()));
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Водитель не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Выбранная строка пуста. Редактирование невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите водителя для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void btnSaveChanges_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewDrivers.SelectedRows.Count > 0) // Проверка, выбрана ли строка
+            {
+                var selectedRow = dataGridViewDrivers.SelectedRows[0]; // Получение выбранной строки
+
+                // Получение табельного номера выбранного водителя
+                if (selectedRow.Cells["colEmployeeNumber"].Value != null)
+                {
+                    string employeeNumber = selectedRow.Cells["colEmployeeNumber"].Value.ToString();
+                    Driver driverToEdit = DriverManager.FindDriver(employeeNumber); // Поиск водителя по табельному номеру
+
+                    if (driverToEdit != null) // Если водитель найден
+                    {
+                        // Получение данных из текстовых полей с удалением пробелов
+                        string fullName = txtFullName.Text.Trim();
+                        string experience = txtExperience.Text.Trim();
+                        string category = string.Join(", ", clbCategories.CheckedItems.Cast<string>()); 
+                        string classType = cmbClassTypes.SelectedItem?.ToString(); 
+
+                        List<string> errors = new List<string>(); // Список для хранения ошибок валидации
+
+                        // Проверка ФИО
+                        if (string.IsNullOrWhiteSpace(fullName))
+                        {
+                            errors.Add("Ошибка ввода в поле ФИО: поле не может быть пустым.");
+                        }
+                        else if (!Regex.IsMatch(fullName, @"^[а-яА-ЯёЁa-zA-Z\s]+$"))
+                        {
+                            errors.Add("Ошибка ввода в поле ФИО: ФИО должно содержать только буквы.");
+                        }
+
+                        if (string.IsNullOrWhiteSpace(employeeNumber))
+                        {
+                            errors.Add("Ошибка ввода в поле Табельный номер: поле не может быть пустым.");
+                        }
+                        else if (!Regex.IsMatch(employeeNumber, @"^\d{1,6}$"))
+                        {
+                            errors.Add("Ошибка ввода в поле Табельный номер: Табельный номер должен содержать только цифры и не превышать 6 символов.");
+                        }
+
+                        // Проверка стажа
+                        if (string.IsNullOrWhiteSpace(experience))
+                        {
+                            errors.Add("Ошибка ввода в поле Стаж: поле не может быть пустым.");
+                        }
+                        else if (!Regex.IsMatch(experience, @"^\d{1,2}$") || int.Parse(experience) > 99)
+                        {
+                            errors.Add("Ошибка ввода в поле Стаж: Стаж должен быть целым числом от 1 до 99.");
+                        }
+
+                        // Проверка выбранной категории
+                        if (string.IsNullOrWhiteSpace(category))
+                        {
+                            errors.Add("Ошибка: необходимо выбрать хотя бы одну категорию.");
+                        }
+
+                        // Проверка выбранного класса
+                        if (string.IsNullOrWhiteSpace(classType))
+                        {
+                            errors.Add("Ошибка: необходимо выбрать класс.");
+                        }
+
+                        // Если есть ошибки, выводим их в сообщении
+                        if (errors.Count > 0)
+                        {
+                            string errorMessage = string.Join(Environment.NewLine, errors);
+                            MessageBox.Show(errorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return; // Прерываем выполнение метода, если есть ошибки
+                        }
+
+                        // Проверяем, были ли изменения в текстовых полях и категориях
+                        bool hasChanges =
+                            fullName != driverToEdit.FullName ||
+                            experience != driverToEdit.Experience.ToString() ||
+                            txtEmployeeNumber.Text.Trim() != driverToEdit.EmployeeNumber ||
+                            classType != driverToEdit.ClassType ||
+                            dtpYearOfBirth.Value.Year != driverToEdit.YearOfBirth ||
+                            driverToEdit.Category != category; // Проверка на изменения в категориях
+
+                        if (hasChanges)
+                        {
+                            // Обновление данных водителя
+                            driverToEdit.FullName = fullName;
+                            driverToEdit.EmployeeNumber = txtEmployeeNumber.Text.Trim();
+                            driverToEdit.Experience = int.Parse(experience);
+                            driverToEdit.ClassType = classType;
+                            driverToEdit.YearOfBirth = dtpYearOfBirth.Value.Year;
+
+                            // Обновление категорий
+                            driverToEdit.Category = category; // Обновление категорий
+
+                            LoadDrivers(); // Обновление списка водителей в DataGridView
+                            ClearFields(); // Очистка полей ввода
+                            MessageBox.Show("Изменения успешно сохранены.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Нет изменений для сохранения.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Водитель не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+
+                else
+                {
+                    MessageBox.Show("Пожалуйста, выберите водителя для сохранения изменений.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+        }
+
         // Обработчик события нажатия кнопки "Очистить поля"
         private void btnClearFields_Click_1(object sender, EventArgs e)
         {
             ClearFields(); // Очистка всех полей ввода
         }
 
-        // Обработчик события нажатия на ячейку в DataGridView
-        private void dataGridViewDrivers_CellContentClick_1(object sender, DataGridViewCellEventArgs e)
-        {
-            if (dataGridViewDrivers.SelectedRows.Count > 0) // Проверка, выбрана ли строка
-            {
-                var selectedRow = dataGridViewDrivers.SelectedRows[0]; // Получение выбранной строки
-
-                // Заполнение полей ввода данными из выбранной строки
-                if (selectedRow.Cells["colFullName"].Value != null)
-                    txtFullName.Text = selectedRow.Cells["colFullName"].Value.ToString();
-                else
-                    txtFullName.Clear();
-
-                if (selectedRow.Cells["colEmployeeNumber"].Value != null)
-                    txtEmployeeNumber.Text = selectedRow.Cells["colEmployeeNumber"].Value.ToString();
-                else
-                    txtEmployeeNumber.Clear();
-
-                if (selectedRow.Cells["colExperience"].Value != null)
-                    txtExperience.Text = selectedRow.Cells["colExperience"].Value.ToString();
-                else
-                    txtExperience.Clear();
-
-                if (selectedRow.Cells["colCategory"].Value != null)
-                {
-                    string categories = selectedRow.Cells["colCategory"].Value.ToString();
-                    for (int i = 0; i < clbCategories.Items.Count; i++)
-                    {
-                        clbCategories.SetItemChecked(i, categories.Contains(clbCategories.Items[i].ToString()));
-                    }
-                }
-                else
-                    clbCategories.ClearSelected();
-
-                if (selectedRow.Cells["colClassType"].Value != null)
-                {
-                    string classType = selectedRow.Cells["colClassType"].Value.ToString();
-                    cmbClassTypes.SelectedItem = classType; // Установка выбранного класса
-                }
-                else
-                {
-                    cmbClassTypes.SelectedIndex = -1; // Сброс выбора
-                }
-
-                if (selectedRow.Cells["colYearOfBirth"].Value != null)
-                    dtpYearOfBirth.Value = new DateTime(Convert.ToInt32(selectedRow.Cells["colYearOfBirth"].Value), 1, 1);
-                else
-                    dtpYearOfBirth.Value = DateTime.Now; // Установка текущей даты, если год рождения не указан
-            }
-        }
+        
 
         private void InitializeComponent()
         {
@@ -276,7 +381,7 @@ namespace FreightTransportSystem
             this.cmbClassTypes = new System.Windows.Forms.ComboBox();
             this.btnEditDriver = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
+            this.btnSaveChanges = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDrivers)).BeginInit();
             this.SuspendLayout();
             // 
@@ -322,7 +427,6 @@ namespace FreightTransportSystem
             this.dataGridViewDrivers.Name = "dataGridViewDrivers";
             this.dataGridViewDrivers.Size = new System.Drawing.Size(644, 466);
             this.dataGridViewDrivers.TabIndex = 7;
-            this.dataGridViewDrivers.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewDrivers_CellContentClick_1);
             // 
             // colFullName
             // 
@@ -421,7 +525,7 @@ namespace FreightTransportSystem
             // 
             // btnClearFields
             // 
-            this.btnClearFields.Location = new System.Drawing.Point(412, 12);
+            this.btnClearFields.Location = new System.Drawing.Point(220, 55);
             this.btnClearFields.Name = "btnClearFields";
             this.btnClearFields.Size = new System.Drawing.Size(186, 27);
             this.btnClearFields.TabIndex = 17;
@@ -453,7 +557,6 @@ namespace FreightTransportSystem
             this.clbCategories.Name = "clbCategories";
             this.clbCategories.Size = new System.Drawing.Size(158, 94);
             this.clbCategories.TabIndex = 18;
-            this.clbCategories.SelectedIndexChanged += new System.EventHandler(this.clbCategories_SelectedIndexChanged);
             // 
             // lblCategory
             // 
@@ -478,7 +581,7 @@ namespace FreightTransportSystem
             // 
             // btnEditDriver
             // 
-            this.btnEditDriver.Location = new System.Drawing.Point(604, 12);
+            this.btnEditDriver.Location = new System.Drawing.Point(412, 12);
             this.btnEditDriver.Name = "btnEditDriver";
             this.btnEditDriver.Size = new System.Drawing.Size(186, 27);
             this.btnEditDriver.TabIndex = 20;
@@ -496,21 +599,20 @@ namespace FreightTransportSystem
             this.label1.TabIndex = 21;
             this.label1.Text = "Список водителей:";
             // 
-            // label2
+            // btnSaveChanges
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(217, 51);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(326, 78);
-            this.label2.TabIndex = 22;
-            this.label2.Text = "Для редатирования выберите водителя из списка\r\nДалее нажмите на столбец ФИО\r\nПосл" +
-    "е чего в полях вы можете изменить нужную информацию\r\nНажмите редактировать\r\n\r\n\r\n" +
-    "";
+            this.btnSaveChanges.Location = new System.Drawing.Point(412, 55);
+            this.btnSaveChanges.Name = "btnSaveChanges";
+            this.btnSaveChanges.Size = new System.Drawing.Size(186, 27);
+            this.btnSaveChanges.TabIndex = 23;
+            this.btnSaveChanges.Text = "Сохранить изменения ";
+            this.btnSaveChanges.UseVisualStyleBackColor = true;
+            this.btnSaveChanges.Click += new System.EventHandler(this.btnSaveChanges_Click);
             // 
             // DriverManagerForm
             // 
             this.ClientSize = new System.Drawing.Size(1305, 598);
-            this.Controls.Add(this.label2);
+            this.Controls.Add(this.btnSaveChanges);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnEditDriver);
             this.Controls.Add(this.cmbClassTypes);
@@ -536,110 +638,7 @@ namespace FreightTransportSystem
 
         }
 
-        private void clbCategories_SelectedIndexChanged(object sender, EventArgs e)
-        {
 
-        }
-
-        private void btnEditDriver_Click(object sender, EventArgs e)
-        {
-            if (dataGridViewDrivers.SelectedRows.Count > 0) // Проверка, выбрана ли строка
-            {
-                var selectedRow = dataGridViewDrivers.SelectedRows[0]; // Получение выбранной строки
-
-                // Получение табельного номера выбранного водителя
-                string employeeNumber = selectedRow.Cells["colEmployeeNumber"].Value.ToString();
-                Driver driverToEdit = DriverManager.FindDriver(employeeNumber); // Поиск водителя по табельному номеру
-
-                if (driverToEdit != null) // Если водитель найден
-                {
-                    // Получение данных из текстовых полей с удалением пробелов
-                    string fullName = txtFullName.Text.Trim();
-                    string experience = txtExperience.Text.Trim();
-                    string category = string.Join(", ", clbCategories.CheckedItems.Cast<string>()); // Получение выбранных категорий
-                    string classType = cmbClassTypes.SelectedItem?.ToString(); // Получение выбранного класса
-                    int yearOfBirth = dtpYearOfBirth.Value.Year; // Получение года рождения
-
-                    List<string> errors = new List<string>(); // Список для хранения ошибок валидации
-
-                    // Проверка ФИО
-                    if (string.IsNullOrWhiteSpace(fullName))
-                    {
-                        errors.Add("Ошибка ввода в поле ФИО: поле не может быть пустым.");
-                    }
-                    else if (!Regex.IsMatch(fullName, @"^[а-яА-ЯёЁa-zA-Z\s]+$"))
-                    {
-                        errors.Add("Ошибка ввода в поле ФИО: ФИО должно содержать только буквы.");
-                    }
-
-                    // Проверка табельного номера
-                    if (string.IsNullOrWhiteSpace(employeeNumber))
-                    {
-                        errors.Add("Ошибка ввода в поле Табельный номер: поле не может быть пустым.");
-                    }
-                    else if (!Regex.IsMatch(employeeNumber, @"^\d{1,6}$"))
-                    {
-                        errors.Add("Ошибка ввода в поле Табельный номер: Табельный номер должен содержать только цифры и не превышать 6 символов.");
-                    }
-
-                    // Проверка стажа
-                    if (string.IsNullOrWhiteSpace(experience))
-                    {
-                        errors.Add("Ошибка ввода в поле Стаж: поле не может быть пустым.");
-                    }
-                    else if (!Regex.IsMatch(experience, @"^\d{1,2}$") || int.Parse(experience) > 99)
-                    {
-                        errors.Add("Ошибка ввода в поле Стаж: Стаж должен быть целым числом от 1 до 99.");
-                    }
-
-                    // Проверка выбранной категории
-                    if (string.IsNullOrWhiteSpace(category))
-                    {
-                        errors.Add("Ошибка: необходимо выбрать хотя бы одну категорию.");
-                    }
-
-                    // Проверка выбранного класса
-                    if (string.IsNullOrWhiteSpace(classType))
-                    {
-                        errors.Add("Ошибка: необходимо выбрать класс.");
-                    }
-
-                    // Если есть ошибки, выводим их в сообщении
-                    if (errors.Count > 0)
-                    {
-                        string errorMessage = string.Join(Environment.NewLine, errors);
-                        MessageBox.Show(errorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return; // Прерываем выполнение метода, если есть ошибки
-                    }
-
-                    // Обновление информации о водителе
-                    driverToEdit.FullName = fullName;
-                    driverToEdit.EmployeeNumber = employeeNumber; // Обновление табельного номера
-
-                    // В алидация стажа перед обновлением
-                    if (int.TryParse(experience, out int experienceInt) && experienceInt >= 1 && experienceInt <= 99)
-                    {
-                        driverToEdit.Experience = experienceInt;
-                    }
-
-                    // Обновление остальных полей
-                    driverToEdit.YearOfBirth = yearOfBirth;
-                    driverToEdit.Category = category; // Обновление категорий
-                    driverToEdit.ClassType = classType; // Обновление класса
-
-                    LoadDrivers(); // Обновление списка водителей в DataGridView
-                    ClearFields(); // Очистка полей ввода
-                }
-                else
-                {
-                    MessageBox.Show("Водитель не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Пожалуйста, выберите водителя для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
+       
     }
 }
- 

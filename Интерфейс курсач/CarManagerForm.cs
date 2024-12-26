@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -37,19 +38,22 @@ namespace FreightTransportSystem
         private Button btnEditCar;
         private Label label8;
         private Label label9;
-        private Label label10;
         private Label label11;
+        private Button btnSaveChanges;
         private DataGridView dataGridViewCars;
 
+        // Конструктор формы
         public CarManagerForm()
         {
             InitializeComponent();
             LoadCars();
         }
 
+        // Метод для загрузки автомобилей в DataGridView
         private void LoadCars()
         {
-            dataGridViewCars.Rows.Clear();
+            dataGridViewCars.Rows.Clear(); // Очистка текущих строк в таблице
+            // Добавление автомобилей из менеджера автопарка в таблицу
             foreach (var car in FleetManager.GetCars())
             {
                 dataGridViewCars.Rows.Add(car.LicensePlate, car.Brand, car.LoadCapacity, car.Purpose, car.YearOfManufacture, car.YearOfRepair, car.Mileage, car.Photo);
@@ -72,6 +76,7 @@ namespace FreightTransportSystem
         {
             try
             {
+                // Считывание и очистка данных из текстовых полей
                 string licensePlate = txtLicensePlate.Text.Trim(); // Удаляем пробелы
                 string brand = txtBrand.Text.Trim();
                 string loadCapacity = txtLoadCapacity.Text.Trim();
@@ -79,9 +84,17 @@ namespace FreightTransportSystem
                 string yearOfManufacture = txtYearOfManufacture.Text.Trim();
                 string yearOfRepair = txtYearOfRepair.Text.Trim();
                 string mileage = txtMileage.Text.Trim();
-                string photo = txtPhoto.Text.Trim();
+                string photo = txtPhoto.Text.Trim(); 
 
-                List<string> errors = new List<string>();
+                List<string> errors = new List<string>(); // Список для хранения ошибок 
+
+
+
+                if (FleetManager.GetCars().Any(car => car.LicensePlate == licensePlate))
+                {
+                    errors.Add("Автомобиль с таким номером уже существует.");
+                }
+
 
                 if (!Regex.IsMatch(licensePlate, @"^[a-zA-Zа-яА-Я0-9]{1,9}$"))
                 {
@@ -124,12 +137,13 @@ namespace FreightTransportSystem
                     MessageBox.Show(errorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-
+                // Преобразование данных в нужные типы
                 double loadCapacityDouble = Convert.ToDouble(loadCapacity);
                 double mileageDouble = Convert.ToDouble(mileage);
                 int yearOfManufactureInt = Convert.ToInt32(yearOfManufacture);
                 int yearOfRepairInt = Convert.ToInt32(yearOfRepair);
 
+                // Создание нового объекта Car и добавление его в менеджер автопарка
                 Car newCar = new Car(licensePlate, brand, loadCapacityDouble, purpose, yearOfManufactureInt, yearOfRepairInt, mileageDouble, photo);
                 FleetManager.GetCars().Add(newCar);
                 LoadCars();
@@ -194,58 +208,11 @@ namespace FreightTransportSystem
 
         private void btnSelectPhoto_Click_1(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp|All Files|*.*";
+            OpenFileDialog openFileDialog = new OpenFileDialog(); // Создаем диалог выбора файла
+            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp|All Files|*.*"; // Устанавливаем фильтр для изображений
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 txtPhoto.Text = openFileDialog.FileName; // Сохраняем путь к файлу
-            }
-        }
-
-        private void dataGridViewCars_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (dataGridViewCars.SelectedRows.Count > 0)
-            {
-                var selectedRow = dataGridViewCars.SelectedRows[0];
-
-                if (selectedRow.Cells["LicensePlate"].Value != null)
-                    txtLicensePlate.Text = selectedRow.Cells["LicensePlate"].Value.ToString();
-                else
-                    txtLicensePlate.Clear();
-
-                if (selectedRow.Cells["Brand"].Value != null)
-                    txtBrand.Text = selectedRow.Cells["Brand"].Value.ToString();
-                else
-                    txtBrand.Clear();
-
-                if (selectedRow.Cells["LoadCapacity"].Value != null)
-                    txtLoadCapacity.Text = selectedRow.Cells["LoadCapacity"].Value.ToString();
-                else
-                    txtLoadCapacity.Clear();
-
-                if (selectedRow.Cells["Purpose"].Value != null)
-                    txtPurpose.Text = selectedRow.Cells["Purpose"].Value.ToString();
-                else txtPurpose.Clear();
-
-                if (selectedRow.Cells["YearOfManufacture"].Value != null)
-                    txtYearOfManufacture.Text = selectedRow.Cells["YearOfManufacture"].Value.ToString();
-                else
-                    txtYearOfManufacture.Clear();
-
-                if (selectedRow.Cells["YearOfRepair"].Value != null)
-                    txtYearOfRepair.Text = selectedRow.Cells["YearOfRepair"].Value.ToString();
-                else
-                    txtYearOfRepair.Clear();
-
-                if (selectedRow.Cells["Mileage"].Value != null)
-                    txtMileage.Text = selectedRow.Cells["Mileage"].Value.ToString();
-                else
-                    txtMileage.Clear();
-
-                if (selectedRow.Cells["Photo"].Value != null)
-                    txtPhoto.Text = selectedRow.Cells["Photo"].Value.ToString();
-                else
-                    txtPhoto.Clear();
             }
         }
 
@@ -255,28 +222,53 @@ namespace FreightTransportSystem
             {
                 var selectedRow = dataGridViewCars.SelectedRows[0];
 
-                // Проверка, что все поля заполнены
-                if (string.IsNullOrWhiteSpace(txtLicensePlate.Text) ||
-                    string.IsNullOrWhiteSpace(txtBrand.Text) ||
-                    string.IsNullOrWhiteSpace(txtLoadCapacity.Text) ||
-                    string.IsNullOrWhiteSpace(txtPurpose.Text) ||
-                    string.IsNullOrWhiteSpace(txtYearOfManufacture.Text) ||
-                    string.IsNullOrWhiteSpace(txtYearOfRepair.Text) ||
-                    string.IsNullOrWhiteSpace(txtMileage.Text) ||
-                    string.IsNullOrWhiteSpace(txtPhoto.Text))
+                // Получение номера автомобиля
+                if (selectedRow.Cells["LicensePlate"].Value != null)
                 {
-                    MessageBox.Show("Пожалуйста, заполните все поля для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return; // Прерываем выполнение метода, если есть пустые поля
+                    string licensePlate = selectedRow.Cells["LicensePlate"].Value.ToString(); // Считываем номер автомобиля
+                    Car carToEdit = FleetManager.FindCar(licensePlate); // Находим автомобиль по номеру
+                    if (carToEdit != null)
+                    {
+                        // Заполняем текстовые поля данными из объекта
+                        txtLicensePlate.Text = carToEdit.LicensePlate;
+                        txtBrand.Text = carToEdit.Brand;
+                        txtLoadCapacity.Text = carToEdit.LoadCapacity.ToString();
+                        txtPurpose.Text = carToEdit.Purpose;
+                        txtYearOfManufacture.Text = carToEdit.YearOfManufacture.ToString();
+                        txtYearOfRepair.Text = carToEdit.YearOfRepair.ToString();
+                        txtMileage.Text = carToEdit.Mileage.ToString();
+                        txtPhoto.Text = carToEdit.Photo;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Автомобиль не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
+                else
+                {
+                    MessageBox.Show("Выбранная строка пуста. Редактирование невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите автомобиль для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void btnSaveChanges_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewCars.SelectedRows.Count > 0) // Проверка, выбрана ли строка
+            {
+                var selectedRow = dataGridViewCars.SelectedRows[0];
 
                 // Получение номера автомобиля
                 if (selectedRow.Cells["LicensePlate"].Value != null)
                 {
-                    string licensePlate = selectedRow.Cells["LicensePlate"].Value.ToString();
-                    Car carToEdit = FleetManager.FindCar(licensePlate);
+                    string licensePlate = selectedRow.Cells["LicensePlate"].Value.ToString(); // Считываем номер автомобиля
+                    Car carToEdit = FleetManager.FindCar(licensePlate); // Находим автомобиль по номеру
                     if (carToEdit != null)
                     {
-                        // Получение данных из текстовых полей с удалением пробелов
+                        // Считывание данных из текстовых полей
                         string brand = txtBrand.Text.Trim();
                         string loadCapacity = txtLoadCapacity.Text.Trim();
                         string purpose = txtPurpose.Text.Trim();
@@ -285,8 +277,9 @@ namespace FreightTransportSystem
                         string mileage = txtMileage.Text.Trim();
                         string photo = txtPhoto.Text.Trim();
 
-                        List<string> errors = new List<string>(); // Список для хранения ошибок валидации
+                        List<string> errors = new List<string>();
 
+                        // Проверка корректности ввода
                         if (!Regex.IsMatch(licensePlate, @"^[a-zA-Zа-яА-Я0-9]{1,9}$"))
                         {
                             errors.Add("Номер автомобиля должен содержать только буквы и цифры и не превышать 9 символов.");
@@ -322,7 +315,7 @@ namespace FreightTransportSystem
                             errors.Add("Пробег должен быть целым числом от 1 до 1000000.");
                         }
 
-                        // Если есть ошибки, выводим их в сообщении
+                        // Если есть ошибки, выводим их
                         if (errors.Count > 0)
                         {
                             string errorMessage = string.Join(Environment.NewLine, errors);
@@ -330,7 +323,8 @@ namespace FreightTransportSystem
                             return; // Прерываем выполнение метода, если есть ошибки
                         }
 
-                        // Обновление информации о автомобиле
+                        // Обновление данных автомобиля
+                        carToEdit.LicensePlate = licensePlate;
                         carToEdit.Brand = brand;
                         carToEdit.LoadCapacity = double.Parse(loadCapacity);
                         carToEdit.Purpose = purpose;
@@ -339,8 +333,10 @@ namespace FreightTransportSystem
                         carToEdit.Mileage = double.Parse(mileage);
                         carToEdit.Photo = photo;
 
-                        LoadCars(); // Обновление списка автомобилей
+                        // Обновление списка автомобилей
+                        LoadCars();
                         ClearFields(); // Очистка полей ввода
+                        MessageBox.Show("Изменения успешно сохранены.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
                     {
@@ -349,17 +345,14 @@ namespace FreightTransportSystem
                 }
                 else
                 {
-                    MessageBox.Show("Выбранная строка пуста. Редактирование невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Выбранная строка пуста. Сохранение невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             else
             {
-                MessageBox.Show("Пожалуйста, выберите автомобиль для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Пожалуйста, выберите автомобиль для сохранения изменений.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
-
-
 
         private void InitializeComponent()
         {
@@ -394,8 +387,8 @@ namespace FreightTransportSystem
             this.btnEditCar = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
+            this.btnSaveChanges = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewCars)).BeginInit();
             this.SuspendLayout();
             // 
@@ -416,8 +409,7 @@ namespace FreightTransportSystem
             this.dataGridViewCars.RowHeadersWidth = 51;
             this.dataGridViewCars.Size = new System.Drawing.Size(1023, 549);
             this.dataGridViewCars.TabIndex = 0;
-            this.dataGridViewCars.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewCars_CellContentClick);
-            // 
+           
             // LicensePlate
             // 
             this.LicensePlate.HeaderText = "Номер автомобиля";
@@ -663,17 +655,6 @@ namespace FreightTransportSystem
             this.label9.TabIndex = 27;
             this.label9.Text = "Список автомобилей:";
             // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(537, 47);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(326, 52);
-            this.label10.TabIndex = 28;
-            this.label10.Text = "Для редатирования выберите автомобиль из списка\r\nДалее нажмите на столбец номер а" +
-    "втомобиля\r\nПосле чего в полях вы можете изменить нужную информацию\r\nНажмите реда" +
-    "ктировать\r\n";
-            // 
             // label11
             // 
             this.label11.AutoSize = true;
@@ -683,11 +664,21 @@ namespace FreightTransportSystem
             this.label11.TabIndex = 29;
             this.label11.Text = "Для выбора пути к фото \r\nнажмити на кнопку\r\n\"Добавить фото\"";
             // 
+            // btnSaveChanges
+            // 
+            this.btnSaveChanges.Location = new System.Drawing.Point(540, 50);
+            this.btnSaveChanges.Name = "btnSaveChanges";
+            this.btnSaveChanges.Size = new System.Drawing.Size(170, 23);
+            this.btnSaveChanges.TabIndex = 30;
+            this.btnSaveChanges.Text = "Сохранить изменения";
+            this.btnSaveChanges.UseVisualStyleBackColor = true;
+            this.btnSaveChanges.Click += new System.EventHandler(this.btnSaveChanges_Click);
+            // 
             // CarManagerForm
             // 
             this.ClientSize = new System.Drawing.Size(1387, 719);
+            this.Controls.Add(this.btnSaveChanges);
             this.Controls.Add(this.label11);
-            this.Controls.Add(this.label10);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.btnEditCar);
@@ -718,6 +709,7 @@ namespace FreightTransportSystem
 
         }
 
+        
        
     }
 }

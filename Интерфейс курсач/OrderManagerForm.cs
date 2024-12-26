@@ -15,8 +15,8 @@ namespace FreightTransportSystem
 
         // DataGridView для отображения информации о грузах
         private DataGridView dataGridView2;
-       
-       
+
+
 
         // Столбцы для DataGridView с информацией о юридических лицах
         private DataGridViewTextBoxColumn CompanyNameNEW;
@@ -74,7 +74,6 @@ namespace FreightTransportSystem
         private Label label12;
         private Label label13;
         private Label label14;
-        private TextBox txtOrderId;
         private DataGridViewTextBoxColumn OrderId;
         private DataGridViewTextBoxColumn OrderDate;
         private DataGridViewTextBoxColumn SenderName;
@@ -83,8 +82,6 @@ namespace FreightTransportSystem
         private DataGridViewTextBoxColumn UnloadingAddress;
         private DataGridViewTextBoxColumn RouteLength;
         private DataGridViewTextBoxColumn OrderCost;
-        
-        private Label label15;
         private DataGridView dataGridViewCargo;
         private Button btnEditOrder;
         private Button btnEditCargo;
@@ -97,7 +94,11 @@ namespace FreightTransportSystem
         private Button btnRemoveCargo;
         private Label label16;
         private Label label17;
-        private Label label18;
+        private Button btnSaveOrderChanges;
+        private Button btnSaveCargoChanges;
+        private Button btnShowCargo;
+        private Button btnSelectSender;
+        private Button btnSelectReceiver;
 
         // Дополнительный DataGridView (возможно, для других данных)
         private DataGridView dataGridView1;
@@ -108,6 +109,7 @@ namespace FreightTransportSystem
             InitializeComponent(); // Инициализация компонентов формы
             LoadOrders(); // Загрузка заказов при инициализации формы
             LoadClientData(); // Загрузка данных клиентов при инициализации формы
+            ClearFields();
         }
 
         // Обработка события закрытия формы
@@ -135,21 +137,11 @@ namespace FreightTransportSystem
                 );
             }
         }
-        private void dataGridViewOrders_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (dataGridViewOrders.SelectedRows.Count > 0)
-            {
-                var selectedRow = dataGridViewOrders.SelectedRows[0];
-                int orderId = (int)selectedRow.Cells["OrderId"].Value;
-
-                // Загружаем грузы, связанные с выбранным заказом
-                LoadCargoForOrder(orderId);
-            }
-        }
+        
         private void LoadCargoForOrder(int orderId)
         {
             dataGridViewCargo.Rows.Clear(); // Очистка текущих строк в DataGridView для грузов
-            var order = OrderManager.GetOrders().FirstOrDefault(o => o.OrderId == orderId);
+            var order = OrderManager.GetOrders().FirstOrDefault(o => o.OrderId == orderId); //  Поиск заказа по его идентификатору
             if (order != null)
             {
                 int cargoId = 1; // Начинаем с 1
@@ -200,7 +192,6 @@ namespace FreightTransportSystem
             txtRouteLength.Clear();
             txtOrderCost.Clear();
             dtpOrderDate.Value = DateTime.Now; // Устанавливаем дату на текущее значение
-            txtOrderId.Clear();
             txtCargoName.Clear();
             txtCargoUnit.Clear();
             txtCargoQuantity.Clear();
@@ -211,17 +202,18 @@ namespace FreightTransportSystem
         // Обработчик события нажатия кнопки "Добавить заказ"
         private void btnAddOrder_Click_1(object sender, EventArgs e)
         {
-            List<string> errors = new List<string>();
-
+           
             // Генерация нового уникального номера заказа
             int orderId = OrderManager.GetOrders().Any() ? OrderManager.GetOrders().Max(o => o.OrderId) + 1 : 1;
-
-            DateTime orderDate = dtpOrderDate.Value; // Получаем дату из DateTimePicker
+            
+            // Cчитываение данных
+            DateTime orderDate = dtpOrderDate.Value; 
             string senderName = txtSenderName.Text.Trim();
             string loadingAddress = txtLoadingAddress.Text.Trim();
             string receiverName = txtReceiverName.Text.Trim();
             string unloadingAddress = txtUnloadingAddress.Text.Trim();
 
+            List<string> errors = new List<string>();
             // Проверка длины маршрута
             if (!double.TryParse(txtRouteLength.Text, out double routeLength) || routeLength <= 0 || routeLength > 10000000)
             {
@@ -285,9 +277,11 @@ namespace FreightTransportSystem
         // Обработчик события нажатия кнопки "Добавить груз"
         private void btnAddCargo_Click(object sender, EventArgs e)
         {
-            // Проверяем, что введен номер заказа
-            if (int.TryParse(txtOrderId.Text.Trim(), out int orderId))
+            if (dataGridViewOrders.SelectedRows.Count > 0) // Проверка, выбрана ли строка заказа
             {
+                var selectedOrderRow = dataGridViewOrders.SelectedRows[0]; // Получение выбранной строки
+                int orderId = (int)selectedOrderRow.Cells["OrderId"].Value; // Получаем номер заказа
+
                 // Ищем заказ по номеру
                 CargoOrder selectedOrder = OrderManager.GetOrders().FirstOrDefault(o => o.OrderId == orderId);
 
@@ -357,18 +351,19 @@ namespace FreightTransportSystem
             }
             else
             {
-                MessageBox.Show("Некорректный номер заказа. Пожалуйста, введите целое число.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Пожалуйста, выберите заказ из таблицы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
-        // Обработчик события нажатия кнопки "Удалить заказ"
+        
         private void btnRemoveOrder_Click_1(object sender, EventArgs e)
         {
             if (dataGridViewOrders.SelectedRows.Count > 0)
             {
+                // Получаем выбраный элемент
                 var selectedRow = dataGridViewOrders.SelectedRows[0];
 
-                // Извлекаем номер заказа из выбранной строки
+                // Получение id заказа из ячейки "OrderId" и преобразование его в целое число
                 int orderId = (int)selectedRow.Cells["OrderId"].Value;
 
                 // Удаление заказа по номеру заказа
@@ -382,91 +377,450 @@ namespace FreightTransportSystem
             }
         }
 
-        // Обработчик события нажатия кнопки "Очистить поля"
+       
         private void btnClearFields_Click_1(object sender, EventArgs e)
         {
-            ClearFields(); // Очистка всех полей ввода
+            ClearFields(); 
         }
 
-        // Обработчик события нажатия на ячейку в DataGridView для физических лиц
-        private void dataGridView1_CellContentClick_1(object sender, DataGridViewCellEventArgs e)
+        private void btnEditOrder_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.SelectedRows.Count > 0)
+            if (dataGridViewOrders.SelectedRows.Count > 0) // Проверка, выбрана ли строка
             {
-                var selectedRow = dataGridView1.SelectedRows[0];
+                var selectedRow = dataGridViewOrders.SelectedRows[0]; // Получение выбранной строки
 
-                // Заполняем текстовые поля данными из выбранной строки
-                txtSenderName.Text = selectedRow.Cells["ContactName"].Value?.ToString() ?? string.Empty;
-                txtReceiverName.Text = selectedRow.Cells["Phone"].Value?.ToString() ?? string.Empty;
-                txtLoadingAddress.Text = selectedRow.Cells["PassportSeries"].Value?.ToString() ?? string.Empty;
-                txtUnloadingAddress.Text = selectedRow.Cells["PassportNumber"].Value?.ToString() ?? string.Empty;
-                txtRouteLength.Text = selectedRow.Cells["IssueDate"].Value?.ToString() ?? string.Empty;
-                txtOrderCost.Text = selectedRow.Cells["IssuedBy"].Value?.ToString() ?? string.Empty;
-            }
-        }
-
-        // Обработчик события нажатия на ячейку в DataGridView для юридических лиц
-        private void dataGridView2_CellContentClick_1(object sender, DataGridViewCellEventArgs e)
-        {
-            if (dataGridView2.SelectedRows.Count > 0)
-            {
-                var selectedRow = dataGridView2.SelectedRows[0];
-
-                // Заполняем текстовые поля данными из выбранной строки
-                txtSenderName.Text = selectedRow.Cells["CompanyNameNEW"].Value?.ToString() ?? string.Empty;
-                txtReceiverName.Text = selectedRow.Cells["DirectorName"].Value?.ToString() ?? string.Empty;
-                txtLoadingAddress.Text = selectedRow.Cells["LegalAddress"].Value?.ToString() ?? string.Empty;
-                txtUnloadingAddress.Text = selectedRow.Cells["LegalEntityPhone"].Value?.ToString() ?? string.Empty;
-                txtRouteLength.Text = selectedRow.Cells["BankName"].Value?.ToString() ?? string.Empty;
-                txtOrderCost.Text = selectedRow.Cells["AccountNumber"].Value?.ToString() ?? string.Empty;
-            }
-        }
-
-        // Обработчик события нажатия на ячейку в DataGridView для заказов
-        private void dataGridViewOrders_CellContentClick_1(object sender, DataGridViewCellEventArgs e)
-        {
-            try
-            {
-                if (dataGridViewOrders.SelectedRows.Count > 0)
+                // Прверка на получение Id
+                if (selectedRow.Cells["OrderId"].Value != null)
                 {
-                    var selectedRow = dataGridViewOrders.SelectedRows[0];
+                    // Получение id заказа из ячейки "OrderId" и преобразование его в целое число
+                    int orderId = (int)selectedRow.Cells["OrderId"].Value; 
+                    CargoOrder orderToEdit = OrderManager.GetOrders().FirstOrDefault(o => o.OrderId == orderId); // Поиск заказа по номеру
 
-                    // Проверяем, что ячейка OrderId не равна null
-                    if (selectedRow.Cells["OrderId"].Value != null)
+                    if (orderToEdit != null) // Если заказ найден
                     {
-                        int orderId = (int)selectedRow.Cells["OrderId"].Value;
-
-                        // Заполняем поля ввода данными из выбранного заказа
-                        dtpOrderDate.Value = selectedRow.Cells["OrderDate"].Value != null
-                            ? (DateTime)selectedRow.Cells["OrderDate"].Value
-                            : DateTime.Now; // Установите значение по умолчанию, если null
-
-                        txtSenderName.Text = selectedRow.Cells["SenderName"].Value?.ToString() ?? string.Empty;
-                        txtLoadingAddress.Text = selectedRow.Cells["LoadingAddress"].Value?.ToString() ?? string.Empty;
-                        txtReceiverName.Text = selectedRow.Cells["ReceiverName"].Value?.ToString() ?? string.Empty;
-                        txtUnloadingAddress.Text = selectedRow.Cells["UnloadingAddress"].Value?.ToString() ?? string.Empty;
-                        txtRouteLength.Text = selectedRow.Cells["RouteLength"].Value?.ToString() ?? string.Empty;
-                        txtOrderCost.Text = selectedRow.Cells["OrderCost"].Value?.ToString() ?? string.Empty;
-                        txtOrderId.Text = orderId.ToString(); // Сохраняем номер заказа для редактирования
-
-                        // Загружаем грузы, связанные с выбранным заказом
-                        LoadCargoForOrder(orderId);
+                        // Заполнение полей данными из объекта
+                        txtSenderName.Text = orderToEdit.SenderName;
+                        txtLoadingAddress.Text = orderToEdit.LoadingAddress;
+                        txtReceiverName.Text = orderToEdit.ReceiverName;
+                        txtUnloadingAddress.Text = orderToEdit.UnloadingAddress;
+                        txtRouteLength.Text = orderToEdit.RouteLength.ToString();
+                        txtOrderCost.Text = orderToEdit.OrderCost.ToString();
+                        dtpOrderDate.Value = orderToEdit.OrderDate; // Установка даты заказа
                     }
                     else
                     {
-                        MessageBox.Show("Выбранный заказ не имеет идентификатора. Пожалуйста, выберите другой заказ.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("Заказ не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
+                else
+                {
+                    MessageBox.Show("Выбранная строка пуста. Редактирование невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
-            catch (NullReferenceException ex)
+            else
             {
-                MessageBox.Show("Произошла ошибка: " + ex.Message + ". Пожалуйста, убедитесь, что все данные корректны.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Произошла непредвиденная ошибка: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Пожалуйста, выберите заказ для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
+
+        private void btnEditCargo_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewCargo.SelectedRows.Count > 0) // Проверка, выбрана ли строка
+            {
+                var selectedRow = dataGridViewCargo.SelectedRows[0]; // Получение выбранной строки
+
+                // Проверка выбран ли Id
+                if (selectedRow.Cells["CargoId"].Value != null)
+                {
+                    // Получение id заказа из ячейки "CargoerId" и преобразование его в целое число
+                    int cargoId = (int)selectedRow.Cells["CargoId"].Value;
+                    Cargo cargoToEdit = OrderManager.GetOrders() 
+                        .SelectMany(o => o.CargoList) // Получаем все грузы из всех заказов
+                        .FirstOrDefault(c => c.CargoId == cargoId); // Поиск груза по номеру
+
+                    if (cargoToEdit != null) // Если груз найден
+                    {
+                        // Заполнение полей данными из объекта
+                        txtCargoName.Text = cargoToEdit.Name;
+                        txtCargoUnit.Text = cargoToEdit.Unit;
+                        txtCargoQuantity.Text = cargoToEdit.Quantity.ToString();
+                        txtCargoWeight.Text = cargoToEdit.Weight.ToString();
+                        txtCargoInsuranceValue.Text = cargoToEdit.InsuranceValue.ToString();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Груз не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Выбранная строка пуста. Редактирование невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите груз для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        private void btnRemoveCargo_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewOrders.SelectedRows.Count > 0) // Проверка, выбрана ли строка заказа
+            {
+                var selectedOrderRow = dataGridViewOrders.SelectedRows[0]; // Получение выбранной строки 
+                int orderId = (int)selectedOrderRow.Cells["OrderId"].Value; // Получаем номер заказа
+
+                var order = OrderManager.GetOrders().FirstOrDefault(o => o.OrderId == orderId); // Поиск заказа по номеру
+                if (order != null)
+                {
+                    // Проверяем, что выбран груз
+                    if (dataGridViewCargo.SelectedRows.Count > 0)
+                    {
+                        var selectedCargoRow = dataGridViewCargo.SelectedRows[0]; // Получение выбранной строки
+                        int cargoIndex = selectedCargoRow.Index; // Получаем индекс выбранного груза
+
+                        // Проверяем, что индекс в пределах допустимого диапазона
+                        if (cargoIndex >= 0 && cargoIndex < order.CargoList.Count)
+                        {
+                            // Запрашиваем подтверждение удаления
+                            DialogResult dialogResult = MessageBox.Show($"Вы уверены, что хотите удалить груз ?", "Подтверждение удаления", MessageBoxButtons.YesNo);
+
+                            // Если пользователь подтвердил удаление
+                            if (dialogResult == DialogResult.Yes)
+                            {
+                                order.CargoList.RemoveAt(cargoIndex); // Удаляем груз по индексу
+                                LoadCargoForOrder(orderId); // Обновляем отображение грузов
+                                MessageBox.Show("Груз успешно удален.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Груз не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Пожалуйста, выберите груз для удаления.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Заказ не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите заказ перед удалением груза.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+
+
+        private void btnSaveOrderChanges_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewOrders.SelectedRows.Count > 0) // Проверка, выбрана ли строка
+            {
+                var selectedRow = dataGridViewOrders.SelectedRows[0]; // Получение выбранной строки
+
+                // Проверка что выбран номер заказа
+                if (selectedRow.Cells["OrderId"].Value != null)
+                {
+                    int orderId = (int)selectedRow.Cells["OrderId"].Value; // Получаем номер заказа
+                    CargoOrder orderToEdit = OrderManager.GetOrders().FirstOrDefault(o => o.OrderId == orderId); // Поиск заказа по номеру
+
+                    if (orderToEdit != null) // Если заказ найден
+                    {
+
+                        List<string> errors = new List<string>();
+
+
+                        // Считываем данные из полей 
+                        DateTime orderDate = dtpOrderDate.Value;
+                        string senderName = txtSenderName.Text.Trim();
+                        string loadingAddress = txtLoadingAddress.Text.Trim();
+                        string receiverName = txtReceiverName.Text.Trim();
+                        string unloadingAddress = txtUnloadingAddress.Text.Trim();
+
+                        // Проверка длины маршрута
+                        if (!double.TryParse(txtRouteLength.Text, out double routeLength) || routeLength <= 0 || routeLength > 10000000)
+                        {
+                            errors.Add("Длина маршрута должна быть числом от 1 до 10,000,000.");
+                        }
+
+                        // Проверка стоимости
+                        if (!double.TryParse(txtOrderCost.Text, out double orderCost) || orderCost <= 0 || orderCost > 100000)
+                        {
+                            errors.Add("Стоимость заказа должна быть числом от 1 до 100,000.");
+                        }
+
+                        // Проверка существования отправителя
+                        bool senderExists = ClientManager.GetClients().OfType<IndividualClient>()
+                            .Any(c => c.ContactName.Equals(senderName, StringComparison.OrdinalIgnoreCase)) ||
+                            ClientManager.GetClients().OfType<LegalEntityClient>()
+                            .Any(c => c.CompanyName.Equals(senderName, StringComparison.OrdinalIgnoreCase));
+
+                        // Проверка существования получателя
+                        bool receiverExists = ClientManager.GetClients().OfType<IndividualClient>()
+                            .Any(c => c.ContactName.Equals(receiverName, StringComparison.OrdinalIgnoreCase)) ||
+                            ClientManager.GetClients().OfType<LegalEntityClient>()
+                            .Any(c => c.CompanyName.Equals(receiverName, StringComparison.OrdinalIgnoreCase));
+
+                        // Если отправитель или получатель не существуют, добавляем сообщение об ошибке
+                        if (!senderExists)
+                        {
+                            errors.Add("Отправитель не существует. Пожалуйста, проверьте введенные данные.");
+                        }
+
+                        if (!receiverExists)
+                        {
+                            errors.Add("Получатель не существует. Пожалуйста, проверьте введенные данные.");
+                        }
+
+                        // Проверка адресов
+                        if (!Regex.IsMatch(loadingAddress, @"^[a-zA-Zа-яА-Я0-9/ ]+$"))
+                        {
+                            errors.Add("Адрес загрузки может содержать только буквы, цифры и символ '/'.");
+                        }
+
+                        if (!Regex.IsMatch(unloadingAddress, @"^[a-zA-Zа-яА-Я0-9/ ]+$"))
+                        {
+                            errors.Add("Адрес разгрузки может содержать только буквы, цифры и символ '/'.");
+                        }
+
+                        // Если есть ошибки, выводим их
+                        if (errors.Count > 0)
+                        {
+                            MessageBox.Show(string.Join(Environment.NewLine, errors), "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+
+                        // Проверка на изменения
+                        if (txtSenderName.Text.Trim() != orderToEdit.SenderName ||
+                            txtLoadingAddress.Text.Trim() != orderToEdit.LoadingAddress ||
+                            txtReceiverName.Text.Trim() != orderToEdit.ReceiverName ||
+                            txtUnloadingAddress.Text.Trim() != orderToEdit.UnloadingAddress ||
+                            txtRouteLength.Text.Trim() != orderToEdit.RouteLength.ToString() ||
+                            txtOrderCost.Text.Trim() != orderToEdit.OrderCost.ToString())
+                        {
+                            // Обновление данных заказа
+                            orderToEdit.SenderName = txtSenderName.Text.Trim();
+                            orderToEdit.LoadingAddress = txtLoadingAddress.Text.Trim();
+                            orderToEdit.ReceiverName = txtReceiverName.Text.Trim();
+                            orderToEdit.UnloadingAddress = txtUnloadingAddress.Text.Trim();
+                            orderToEdit.RouteLength = double.Parse(txtRouteLength.Text.Trim());
+                            orderToEdit.OrderCost = double.Parse(txtOrderCost.Text.Trim());
+                            orderToEdit.OrderDate = dtpOrderDate.Value; // Обновление даты заказа
+
+                            LoadOrders(); // Обновление списка заказов
+                            ClearFields(); // Очистка полей ввода
+                            MessageBox.Show("Заказ успешно обновлен.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Нет изменений для сохранения.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Заказ не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Выбранная строка пуста. Сохранение невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите заказ для сохранения изменений.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+
+
+        private void btnSaveCargoChanges_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewCargo.SelectedRows.Count > 0) // Проверка, выбрана ли строка
+            {
+                var selectedRow = dataGridViewCargo.SelectedRows[0]; // Получение выбранной строки
+
+                // Получение номера груза
+                if (selectedRow.Cells["CargoId"].Value != null)
+                {
+                    int cargoId = (int)selectedRow.Cells["CargoId"].Value;
+                    Cargo cargoToEdit = OrderManager.GetOrders()
+                        .SelectMany(o => o.CargoList) // Получаем все грузы из всех заказов
+                        .FirstOrDefault(c => c.CargoId == cargoId); // Поиск груза по номеру
+
+                    if (cargoToEdit != null) // Если груз найден
+                    {
+
+                        List<string> errors = new List<string>();
+
+                        // Получаем данные о грузе из текстовых полей
+                        string cargoName = txtCargoName.Text.Trim();
+                        string cargoUnit = txtCargoUnit.Text.Trim();
+
+                        // Проверка названия груза
+                        if (!Regex.IsMatch(cargoName, @"^[a-zA-Zа-яА-Я ]+$"))
+                        {
+                            errors.Add("Название груза может содержать только буквы.");
+                        }
+
+                        // Проверка единицы измерения
+                        if (!Regex.IsMatch(cargoUnit, @"^[a-zA-Zа-яА-Я ]+$"))
+                        {
+                            errors.Add("Единица измерения может содержать только буквы.");
+                        }
+
+                        // Проверка количества
+                        if (!double.TryParse(txtCargoQuantity.Text, out double cargoQuantity) || cargoQuantity <= 0 || cargoQuantity > 100)
+                        {
+                            errors.Add("Количество должно быть числом от 1 до 100.");
+                        }
+
+                        // Проверка веса
+                        if (!double.TryParse(txtCargoWeight.Text, out double cargoWeight) || cargoWeight <= 0 || cargoWeight > 10000000)
+                        {
+                            errors.Add("Вес должен быть числом от 1 до 10,000,000.");
+                        }
+
+                        // Проверка страховой стоимости
+                        if (!double.TryParse(txtCargoInsuranceValue.Text, out double cargoInsuranceValue) || cargoInsuranceValue <= 0 || cargoInsuranceValue > 10000000)
+                        {
+                            errors.Add("Страховая стоимость должна быть числом от 1 до 10,000,000.");
+                        }
+
+                        // Если есть ошибки, выводим их
+                        if (errors.Count > 0)
+                        {
+                            MessageBox.Show(string.Join(Environment.NewLine, errors), "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                        // Проверка на изменения
+                        if (txtCargoName.Text.Trim() != cargoToEdit.Name ||
+                            txtCargoUnit.Text.Trim() != cargoToEdit.Unit ||
+                            txtCargoQuantity.Text.Trim() != cargoToEdit.Quantity.ToString() ||
+                            txtCargoWeight.Text.Trim() != cargoToEdit.Weight.ToString() ||
+                            txtCargoInsuranceValue.Text.Trim() != cargoToEdit.InsuranceValue.ToString())
+                        {
+                            // Обновление данных груза
+                            cargoToEdit.Name = txtCargoName.Text.Trim();
+                            cargoToEdit.Unit = txtCargoUnit.Text.Trim();
+                            cargoToEdit.Quantity = double.Parse(txtCargoQuantity.Text.Trim());
+                            cargoToEdit.Weight = double.Parse(txtCargoWeight.Text.Trim());
+                            cargoToEdit.InsuranceValue = double.Parse(txtCargoInsuranceValue.Text.Trim());
+
+                            LoadCargoForOrder(cargoToEdit.CargoId); // Обновление отображения грузов для текущего заказа
+                            ClearFields(); // Очистка полей ввода
+                            MessageBox.Show("Груз успешно обновлен.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Нет изменений для сохранения.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Груз не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Выбранная строка пуста. Сохранение невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите груз для сохранения изменений.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void btnShowCargo_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewOrders.SelectedRows.Count > 0) // Проверка, выбрана ли строка
+            {
+                var selectedRow = dataGridViewOrders.SelectedRows[0]; // Получение выбранной строки
+
+                // Получение номера заказа
+                if (selectedRow.Cells["OrderId"].Value != null)
+                {
+                    int orderId = (int)selectedRow.Cells["OrderId"].Value;
+                    LoadCargoForOrder(orderId); // Загружаем грузы для выбранного заказа
+                }
+                else
+                {
+                    MessageBox.Show("Выбранная строка пуста. Показать грузы невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите заказ для показа грузов.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void btnSelectSender_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.SelectedRows.Count > 0) // Проверка, выбрана ли строка в таблице физических лиц
+            {
+                var selectedRow = dataGridView1.SelectedRows[0]; // Получение выбранной строки
+                txtSenderName.Text = selectedRow.Cells["ContactName"].Value?.ToString() ?? string.Empty; // Установка имени отправителя
+                dataGridView1.ClearSelection(); // Сброс выделения
+            }
+            else if (dataGridView2.SelectedRows.Count > 0) // Проверка, выбрана ли строка в таблице юридических лиц
+            {
+                var selectedRow = dataGridView2.SelectedRows[0]; // Получение выбранной строки
+                txtSenderName.Text = selectedRow.Cells["CompanyNameNEW"].Value?.ToString() ?? string.Empty; // Установка имени отправителя
+                dataGridView2.ClearSelection(); // Сброс выделения
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите отправителя из списка.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void btnSelectReceiver_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.SelectedRows.Count > 0) // Проверка, выбрана ли строка в таблице физических лиц
+            {
+                var selectedRow = dataGridView1.SelectedRows[0]; // Получение выбранной строки
+                txtReceiverName.Text = selectedRow.Cells["ContactName"].Value?.ToString() ?? string.Empty; // Установка имени получателя
+                dataGridView1.ClearSelection(); // Сброс выделения
+            }
+            else if (dataGridView2.SelectedRows.Count > 0) // Проверка, выбрана ли строка в таблице юридических лиц
+            {
+                var selectedRow = dataGridView2.SelectedRows[0]; // Получение выбранной строки
+                txtReceiverName.Text = selectedRow.Cells["CompanyNameNEW"].Value?.ToString() ?? string.Empty; // Установка имени получателя
+                dataGridView2.ClearSelection(); // Сброс выделения
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите получателя из списка.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void btnSelectOrder_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewOrders.SelectedRows.Count > 0) // Проверка, выбрана ли строка
+            {
+                var selectedRow = dataGridViewOrders.SelectedRows[0]; // Получение выбранной строки
+
+                // Проверяем, что ячейка OrderId не равна null
+                if (selectedRow.Cells["OrderId"].Value != null)
+                {
+                    int orderId = (int)selectedRow.Cells["OrderId"].Value; // Получаем номер заказа
+
+                }
+                else
+                {
+                    MessageBox.Show("Выбранный заказ не имеет идентификатора. Пожалуйста, выберите другой заказ.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите заказ из таблицы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
 
 
         private void InitializeComponent()
@@ -525,8 +879,6 @@ namespace FreightTransportSystem
             this.label12 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
-            this.txtOrderId = new System.Windows.Forms.TextBox();
-            this.label15 = new System.Windows.Forms.Label();
             this.dataGridViewCargo = new System.Windows.Forms.DataGridView();
             this.CargoId = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.CargoName = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -539,7 +891,11 @@ namespace FreightTransportSystem
             this.btnRemoveCargo = new System.Windows.Forms.Button();
             this.label16 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
-            this.label18 = new System.Windows.Forms.Label();
+            this.btnSaveOrderChanges = new System.Windows.Forms.Button();
+            this.btnSaveCargoChanges = new System.Windows.Forms.Button();
+            this.btnShowCargo = new System.Windows.Forms.Button();
+            this.btnSelectSender = new System.Windows.Forms.Button();
+            this.btnSelectReceiver = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOrders)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
@@ -562,7 +918,7 @@ namespace FreightTransportSystem
             this.dataGridViewOrders.Name = "dataGridViewOrders";
             this.dataGridViewOrders.Size = new System.Drawing.Size(564, 298);
             this.dataGridViewOrders.TabIndex = 0;
-            this.dataGridViewOrders.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewOrders_CellContentClick_1);
+          
             // 
             // OrderId
             // 
@@ -619,7 +975,7 @@ namespace FreightTransportSystem
             this.dataGridView2.Name = "dataGridView2";
             this.dataGridView2.Size = new System.Drawing.Size(265, 228);
             this.dataGridView2.TabIndex = 1;
-            this.dataGridView2.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView2_CellContentClick_1);
+           
             // 
             // CompanyNameNEW
             // 
@@ -670,7 +1026,7 @@ namespace FreightTransportSystem
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.Size = new System.Drawing.Size(265, 231);
             this.dataGridView1.TabIndex = 2;
-            this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick_1);
+           
             // 
             // ContactName
             // 
@@ -711,7 +1067,7 @@ namespace FreightTransportSystem
             // 
             // txtSenderName
             // 
-            this.txtSenderName.Location = new System.Drawing.Point(12, 169);
+            this.txtSenderName.Location = new System.Drawing.Point(12, 214);
             this.txtSenderName.Name = "txtSenderName";
             this.txtSenderName.Size = new System.Drawing.Size(200, 20);
             this.txtSenderName.TabIndex = 4;
@@ -719,35 +1075,35 @@ namespace FreightTransportSystem
             // 
             // txtOrderCost
             // 
-            this.txtOrderCost.Location = new System.Drawing.Point(12, 535);
+            this.txtOrderCost.Location = new System.Drawing.Point(12, 609);
             this.txtOrderCost.Name = "txtOrderCost";
             this.txtOrderCost.Size = new System.Drawing.Size(200, 20);
             this.txtOrderCost.TabIndex = 6;
             // 
             // txtUnloadingAddress
             // 
-            this.txtUnloadingAddress.Location = new System.Drawing.Point(12, 378);
+            this.txtUnloadingAddress.Location = new System.Drawing.Point(12, 452);
             this.txtUnloadingAddress.Name = "txtUnloadingAddress";
             this.txtUnloadingAddress.Size = new System.Drawing.Size(200, 20);
             this.txtUnloadingAddress.TabIndex = 7;
             // 
             // txtRouteLength
             // 
-            this.txtRouteLength.Location = new System.Drawing.Point(12, 460);
+            this.txtRouteLength.Location = new System.Drawing.Point(12, 534);
             this.txtRouteLength.Name = "txtRouteLength";
             this.txtRouteLength.Size = new System.Drawing.Size(200, 20);
             this.txtRouteLength.TabIndex = 8;
             // 
             // txtReceiverName
             // 
-            this.txtReceiverName.Location = new System.Drawing.Point(12, 314);
+            this.txtReceiverName.Location = new System.Drawing.Point(12, 388);
             this.txtReceiverName.Name = "txtReceiverName";
             this.txtReceiverName.Size = new System.Drawing.Size(200, 20);
             this.txtReceiverName.TabIndex = 10;
             // 
             // txtLoadingAddress
             // 
-            this.txtLoadingAddress.Location = new System.Drawing.Point(12, 239);
+            this.txtLoadingAddress.Location = new System.Drawing.Point(12, 284);
             this.txtLoadingAddress.Name = "txtLoadingAddress";
             this.txtLoadingAddress.Size = new System.Drawing.Size(200, 20);
             this.txtLoadingAddress.TabIndex = 11;
@@ -756,7 +1112,7 @@ namespace FreightTransportSystem
             // 
             this.btnAddOrder.Location = new System.Drawing.Point(12, 12);
             this.btnAddOrder.Name = "btnAddOrder";
-            this.btnAddOrder.Size = new System.Drawing.Size(224, 79);
+            this.btnAddOrder.Size = new System.Drawing.Size(131, 35);
             this.btnAddOrder.TabIndex = 12;
             this.btnAddOrder.Text = "Добавить заказ";
             this.btnAddOrder.UseVisualStyleBackColor = true;
@@ -764,9 +1120,9 @@ namespace FreightTransportSystem
             // 
             // btnRemoveOrder
             // 
-            this.btnRemoveOrder.Location = new System.Drawing.Point(449, 209);
+            this.btnRemoveOrder.Location = new System.Drawing.Point(164, 14);
             this.btnRemoveOrder.Name = "btnRemoveOrder";
-            this.btnRemoveOrder.Size = new System.Drawing.Size(157, 79);
+            this.btnRemoveOrder.Size = new System.Drawing.Size(147, 33);
             this.btnRemoveOrder.TabIndex = 13;
             this.btnRemoveOrder.Text = "Удалить заказ";
             this.btnRemoveOrder.UseVisualStyleBackColor = true;
@@ -774,9 +1130,9 @@ namespace FreightTransportSystem
             // 
             // btnClearFields
             // 
-            this.btnClearFields.Location = new System.Drawing.Point(449, 422);
+            this.btnClearFields.Location = new System.Drawing.Point(317, 12);
             this.btnClearFields.Name = "btnClearFields";
-            this.btnClearFields.Size = new System.Drawing.Size(157, 79);
+            this.btnClearFields.Size = new System.Drawing.Size(114, 35);
             this.btnClearFields.TabIndex = 14;
             this.btnClearFields.Text = "Очистить поля ";
             this.btnClearFields.UseVisualStyleBackColor = true;
@@ -794,7 +1150,7 @@ namespace FreightTransportSystem
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 153);
+            this.label2.Location = new System.Drawing.Point(9, 198);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(201, 13);
             this.label2.TabIndex = 16;
@@ -803,7 +1159,7 @@ namespace FreightTransportSystem
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 218);
+            this.label3.Location = new System.Drawing.Point(9, 263);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(134, 13);
             this.label3.TabIndex = 17;
@@ -812,7 +1168,7 @@ namespace FreightTransportSystem
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(9, 298);
+            this.label4.Location = new System.Drawing.Point(9, 372);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(151, 13);
             this.label4.TabIndex = 18;
@@ -821,7 +1177,7 @@ namespace FreightTransportSystem
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(9, 358);
+            this.label5.Location = new System.Drawing.Point(9, 432);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(140, 13);
             this.label5.TabIndex = 19;
@@ -830,7 +1186,7 @@ namespace FreightTransportSystem
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(9, 444);
+            this.label6.Location = new System.Drawing.Point(9, 518);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(96, 13);
             this.label6.TabIndex = 20;
@@ -839,7 +1195,7 @@ namespace FreightTransportSystem
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(9, 511);
+            this.label7.Location = new System.Drawing.Point(9, 585);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(65, 13);
             this.label7.TabIndex = 21;
@@ -867,9 +1223,9 @@ namespace FreightTransportSystem
             // 
             // btnAddCargo
             // 
-            this.btnAddCargo.Location = new System.Drawing.Point(252, 12);
+            this.btnAddCargo.Location = new System.Drawing.Point(12, 49);
             this.btnAddCargo.Name = "btnAddCargo";
-            this.btnAddCargo.Size = new System.Drawing.Size(179, 79);
+            this.btnAddCargo.Size = new System.Drawing.Size(131, 35);
             this.btnAddCargo.TabIndex = 24;
             this.btnAddCargo.Text = "Добавить груз";
             this.btnAddCargo.UseVisualStyleBackColor = true;
@@ -955,22 +1311,6 @@ namespace FreightTransportSystem
             this.label14.TabIndex = 34;
             this.label14.Text = "Страховая стоимость:";
             // 
-            // txtOrderId
-            // 
-            this.txtOrderId.Location = new System.Drawing.Point(255, 530);
-            this.txtOrderId.Name = "txtOrderId";
-            this.txtOrderId.Size = new System.Drawing.Size(148, 20);
-            this.txtOrderId.TabIndex = 35;
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(252, 504);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(126, 13);
-            this.label15.TabIndex = 36;
-            this.label15.Text = "Введите номер заказа:";
-            // 
             // dataGridViewCargo
             // 
             this.dataGridViewCargo.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -985,7 +1325,7 @@ namespace FreightTransportSystem
             this.dataGridViewCargo.Name = "dataGridViewCargo";
             this.dataGridViewCargo.Size = new System.Drawing.Size(543, 298);
             this.dataGridViewCargo.TabIndex = 37;
-            this.dataGridViewCargo.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewCargo_CellContentClick);
+            
             // 
             // CargoId
             // 
@@ -1019,9 +1359,9 @@ namespace FreightTransportSystem
             // 
             // btnEditOrder
             // 
-            this.btnEditOrder.Location = new System.Drawing.Point(449, 12);
+            this.btnEditOrder.Location = new System.Drawing.Point(436, 14);
             this.btnEditOrder.Name = "btnEditOrder";
-            this.btnEditOrder.Size = new System.Drawing.Size(157, 79);
+            this.btnEditOrder.Size = new System.Drawing.Size(157, 33);
             this.btnEditOrder.TabIndex = 38;
             this.btnEditOrder.Text = "Редактировать заказ";
             this.btnEditOrder.UseVisualStyleBackColor = true;
@@ -1029,9 +1369,9 @@ namespace FreightTransportSystem
             // 
             // btnEditCargo
             // 
-            this.btnEditCargo.Location = new System.Drawing.Point(449, 106);
+            this.btnEditCargo.Location = new System.Drawing.Point(436, 111);
             this.btnEditCargo.Name = "btnEditCargo";
-            this.btnEditCargo.Size = new System.Drawing.Size(157, 79);
+            this.btnEditCargo.Size = new System.Drawing.Size(157, 31);
             this.btnEditCargo.TabIndex = 39;
             this.btnEditCargo.Text = "Редактировать груз";
             this.btnEditCargo.UseVisualStyleBackColor = true;
@@ -1039,9 +1379,9 @@ namespace FreightTransportSystem
             // 
             // btnRemoveCargo
             // 
-            this.btnRemoveCargo.Location = new System.Drawing.Point(449, 326);
+            this.btnRemoveCargo.Location = new System.Drawing.Point(164, 53);
             this.btnRemoveCargo.Name = "btnRemoveCargo";
-            this.btnRemoveCargo.Size = new System.Drawing.Size(157, 63);
+            this.btnRemoveCargo.Size = new System.Drawing.Size(147, 29);
             this.btnRemoveCargo.TabIndex = 40;
             this.btnRemoveCargo.Text = "Удалить груз";
             this.btnRemoveCargo.UseVisualStyleBackColor = true;
@@ -1067,29 +1407,70 @@ namespace FreightTransportSystem
             this.label17.TabIndex = 42;
             this.label17.Text = "Список грузов в зказах:";
             // 
-            // label18
+            // btnSaveOrderChanges
             // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(12, 576);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(326, 78);
-            this.label18.TabIndex = 43;
-            this.label18.Text = "Для редатирования выберите заказ или груз из списка\r\nДалее нажмите на столбец ном" +
-    "ер заказа или груза \r\nПосле чего в полях вы можете изменить нужную информацию\r\nН" +
-    "ажмите редактировать\r\n\r\n\r\n";
+            this.btnSaveOrderChanges.Location = new System.Drawing.Point(436, 62);
+            this.btnSaveOrderChanges.Name = "btnSaveOrderChanges";
+            this.btnSaveOrderChanges.Size = new System.Drawing.Size(157, 23);
+            this.btnSaveOrderChanges.TabIndex = 43;
+            this.btnSaveOrderChanges.Text = "Внести изменения в заказ";
+            this.btnSaveOrderChanges.UseVisualStyleBackColor = true;
+            this.btnSaveOrderChanges.Click += new System.EventHandler(this.btnSaveOrderChanges_Click);
+            // 
+            // btnSaveCargoChanges
+            // 
+            this.btnSaveCargoChanges.Location = new System.Drawing.Point(436, 161);
+            this.btnSaveCargoChanges.Name = "btnSaveCargoChanges";
+            this.btnSaveCargoChanges.Size = new System.Drawing.Size(157, 23);
+            this.btnSaveCargoChanges.TabIndex = 44;
+            this.btnSaveCargoChanges.Text = "Внести изменения в груз";
+            this.btnSaveCargoChanges.UseVisualStyleBackColor = true;
+            this.btnSaveCargoChanges.Click += new System.EventHandler(this.btnSaveCargoChanges_Click);
+            // 
+            // btnShowCargo
+            // 
+            this.btnShowCargo.Location = new System.Drawing.Point(436, 208);
+            this.btnShowCargo.Name = "btnShowCargo";
+            this.btnShowCargo.Size = new System.Drawing.Size(157, 23);
+            this.btnShowCargo.TabIndex = 45;
+            this.btnShowCargo.Text = "Грузы заказа";
+            this.btnShowCargo.UseVisualStyleBackColor = true;
+            this.btnShowCargo.Click += new System.EventHandler(this.btnShowCargo_Click);
+            // 
+            // btnSelectSender
+            // 
+            this.btnSelectSender.Location = new System.Drawing.Point(13, 160);
+            this.btnSelectSender.Name = "btnSelectSender";
+            this.btnSelectSender.Size = new System.Drawing.Size(197, 23);
+            this.btnSelectSender.TabIndex = 46;
+            this.btnSelectSender.Text = "Выбрать отправителя";
+            this.btnSelectSender.UseVisualStyleBackColor = true;
+            this.btnSelectSender.Click += new System.EventHandler(this.btnSelectSender_Click);
+            // 
+            // btnSelectReceiver
+            // 
+            this.btnSelectReceiver.Location = new System.Drawing.Point(12, 330);
+            this.btnSelectReceiver.Name = "btnSelectReceiver";
+            this.btnSelectReceiver.Size = new System.Drawing.Size(197, 23);
+            this.btnSelectReceiver.TabIndex = 47;
+            this.btnSelectReceiver.Text = "Выбрать получателя";
+            this.btnSelectReceiver.UseVisualStyleBackColor = true;
+            this.btnSelectReceiver.Click += new System.EventHandler(this.btnSelectReceiver_Click);
             // 
             // OrderManagerForm
             // 
             this.ClientSize = new System.Drawing.Size(1750, 693);
-            this.Controls.Add(this.label18);
+            this.Controls.Add(this.btnSelectReceiver);
+            this.Controls.Add(this.btnSelectSender);
+            this.Controls.Add(this.btnShowCargo);
+            this.Controls.Add(this.btnSaveCargoChanges);
+            this.Controls.Add(this.btnSaveOrderChanges);
             this.Controls.Add(this.label17);
             this.Controls.Add(this.label16);
             this.Controls.Add(this.btnRemoveCargo);
             this.Controls.Add(this.btnEditCargo);
             this.Controls.Add(this.btnEditOrder);
             this.Controls.Add(this.dataGridViewCargo);
-            this.Controls.Add(this.label15);
-            this.Controls.Add(this.txtOrderId);
             this.Controls.Add(this.label14);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.label12);
@@ -1133,258 +1514,8 @@ namespace FreightTransportSystem
 
         }
 
-        private void dataGridViewCargo_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (dataGridViewCargo.SelectedRows.Count > 0)
-            {
-                var selectedRow = dataGridViewCargo.SelectedRows[0];
+      
 
-                // Заполняем поля ввода данными из выбранного груза
-                txtCargoName.Text = selectedRow.Cells["CargoName"].Value?.ToString();
-                txtCargoUnit.Text = selectedRow.Cells["CargoUnit"].Value?.ToString();
-                txtCargoQuantity.Text = selectedRow.Cells["CargoQuantity"].Value?.ToString();
-                txtCargoWeight.Text = selectedRow.Cells["CargoWeight"].Value?.ToString();
-                txtCargoInsuranceValue.Text = selectedRow.Cells["CargoInsuranceValue"].Value?.ToString();
-            }
-        }
-
-        private void btnEditOrder_Click(object sender, EventArgs e)
-        {
-            if (int.TryParse(txtOrderId.Text, out int orderId))
-            {
-                var order = OrderManager.GetOrders().FirstOrDefault(o => o.OrderId == orderId);
-                if (order != null)
-                {
-                    // Проверка, что все поля заполнены
-                    if (string.IsNullOrWhiteSpace(txtSenderName.Text) ||
-                        string.IsNullOrWhiteSpace(txtLoadingAddress.Text) ||
-                        string.IsNullOrWhiteSpace(txtReceiverName.Text) ||
-                        string.IsNullOrWhiteSpace(txtUnloadingAddress.Text) ||
-                        string.IsNullOrWhiteSpace(txtRouteLength.Text) ||
-                        string.IsNullOrWhiteSpace(txtOrderCost.Text))
-                    {
-                        MessageBox.Show("Пожалуйста, заполните все поля для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return; // Прерываем выполнение метода, если есть пустые поля
-                    }
-
-                    List<string> errors = new List<string>();
-
-                    // Проверка длины маршрута
-                    if (!double.TryParse(txtRouteLength.Text, out double routeLength) || routeLength <= 0 || routeLength > 10000000)
-                    {
-                        errors.Add("Длина маршрута должна быть числом от 1 до 10,000,000.");
-                    }
-
-                    // Проверка стоимости
-                    if (!double.TryParse(txtOrderCost.Text, out double orderCost) || orderCost <= 0 || orderCost > 100000)
-                    {
-                        errors.Add("Стоимость заказа должна быть числом от 1 до 100,000.");
-                    }
-
-                    // Проверка существования отправителя
-                    bool senderExists = ClientManager.GetClients().OfType<IndividualClient>()
-                        .Any(c => c.ContactName.Equals(txtSenderName.Text.Trim(), StringComparison.OrdinalIgnoreCase)) ||
-                        ClientManager.GetClients().OfType<LegalEntityClient>()
-                        .Any(c => c.CompanyName.Equals(txtSenderName.Text.Trim(), StringComparison.OrdinalIgnoreCase));
-
-                    // Проверка существования получателя
-                    bool receiverExists = ClientManager.GetClients().OfType<IndividualClient>()
-                        .Any(c => c.ContactName.Equals(txtReceiverName.Text.Trim(), StringComparison.OrdinalIgnoreCase)) ||
-                        ClientManager.GetClients().OfType<LegalEntityClient>()
-                        .Any(c => c.CompanyName.Equals(txtReceiverName.Text.Trim(), StringComparison.OrdinalIgnoreCase));
-
-                    // Если отправитель или получатель не существуют, добавляем сообщение об ошибке
-                    if (!senderExists)
-                    {
-                        errors.Add("Отправитель не существует. Пожалуйста, проверьте введенные данные.");
-                    }
-
-                    if (!receiverExists)
-                    {
-                        errors.Add("Получатель не существует. Пожалуйста, проверьте введенные данные.");
-                    }
-
-                    // Проверка адресов
-                    if (!Regex.IsMatch(txtLoadingAddress.Text.Trim(), @"^[a-zA-Zа-яА-Я0-9/ ]+$"))
-                    {
-                        errors.Add("Адрес загрузки может содержать только буквы, цифры и символ '/'.");
-                    }
-
-                    if (!Regex.IsMatch(txtUnloadingAddress.Text.Trim(), @"^[a-zA-Zа-яА-Я0-9/ ]+$"))
-                    {
-                        errors.Add("Адрес разгрузки может содержать только буквы, цифры и символ '/'.");
-                    }
-
-                    // Если есть ошибки, выводим их
-                    if (errors.Count > 0)
-                    {
-                        MessageBox.Show(string.Join(Environment.NewLine, errors), "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-
-                    // Обновляем данные заказа
-                    order.OrderDate = dtpOrderDate.Value;
-                    order.SenderName = txtSenderName.Text.Trim();
-                    order.LoadingAddress = txtLoadingAddress.Text.Trim();
-                    order.ReceiverName = txtReceiverName.Text.Trim();
-                    order.UnloadingAddress = txtUnloadingAddress.Text.Trim();
-                    order.RouteLength = routeLength;
-                    order.OrderCost = orderCost;
-
-                    LoadOrders(); // Обновляем отображение заказов
-                    ClearFields(); // Очистка полей ввода
-                    MessageBox.Show("Заказ успешно обновлен.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    MessageBox.Show("Заказ не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Некорректный номер заказа. Пожалуйста, введите целое число.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void btnEditCargo_Click(object sender, EventArgs e)
-        {
-            if (int.TryParse(txtOrderId.Text, out int orderId))
-            {
-                var order = OrderManager.GetOrders().FirstOrDefault(o => o.OrderId == orderId);
-                if (order != null)
-                {
-                    // Проверяем, что выбран груз
-                    if (dataGridViewCargo.SelectedRows.Count > 0)
-                    {
-                        var selectedRow = dataGridViewCargo.SelectedRows[0];
-                        int cargoId = (int)selectedRow.Cells["CargoId"].Value; // Получаем номер груза
-
-                        // Ищем груз по номеру
-                        var cargoToEdit = order.CargoList.FirstOrDefault(c => c.CargoId == cargoId);
-                        if (cargoToEdit != null)
-                        {
-                            // Проверка, что все поля заполнены
-                            if (string.IsNullOrWhiteSpace(txtCargoName.Text) ||
-                                string.IsNullOrWhiteSpace(txtCargoUnit.Text) ||
-                                string.IsNullOrWhiteSpace(txtCargoQuantity.Text) ||
-                                string.IsNullOrWhiteSpace(txtCargoWeight.Text) ||
-                                string.IsNullOrWhiteSpace(txtCargoInsuranceValue.Text))
-                            {
-                                MessageBox.Show("Пожалуйста, заполните все поля для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                return; // Прерываем выполнение метода, если есть пустые поля
-                            }
-
-                            List<string> errors = new List<string>();
-
-                            // Проверка названия груза
-                            if (!Regex.IsMatch(txtCargoName.Text.Trim(), @"^[a-zA-Zа-яА-Я ]+$"))
-                            {
-                                errors.Add("Название груза может содержать только буквы.");
-                            }
-
-                            // Проверка единицы измерения
-                            if (!Regex.IsMatch(txtCargoUnit.Text.Trim(), @"^[a-zA-Zа-яА-Я ]+$"))
-                            {
-                                errors.Add("Единица измерения может содержать только буквы.");
-                            }
-
-                            // Проверка количества
-                            if (!double.TryParse(txtCargoQuantity.Text, out double cargoQuantity) || cargoQuantity <= 0 || cargoQuantity > 100)
-                            {
-                                errors.Add("Количество должно быть числом от 1 до 100.");
-                            }
-
-                            // Проверка веса
-                            if (!double.TryParse(txtCargoWeight.Text, out double cargoWeight) || cargoWeight <= 0 || cargoWeight > 10000000)
-                            {
-                                errors.Add("Вес должен быть числом от 1 до 10,000,000.");
-                            }
-
-                            // Проверка страховой стоимости
-                            if (!double.TryParse(txtCargoInsuranceValue.Text, out double cargoInsuranceValue) || cargoInsuranceValue <= 0 || cargoInsuranceValue > 10000000)
-                            {
-                                errors.Add("Страховая стоимость должна быть числом от 1 до 10,000,000.");
-                            }
-
-                            // Если есть ошибки, выводим их
-                            if (errors.Count > 0)
-                            {
-                                MessageBox.Show(string.Join(Environment.NewLine, errors), "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                return;
-                            }
-
-                            // Обновляем данные груза
-                            cargoToEdit.Name = txtCargoName.Text.Trim();
-                            cargoToEdit.Unit = txtCargoUnit.Text.Trim();
-                            cargoToEdit.Quantity = cargoQuantity;
-                            cargoToEdit.Weight = cargoWeight;
-                            cargoToEdit.InsuranceValue = cargoInsuranceValue;
-
-                            LoadCargoForOrder(orderId); // Обновляем отображение грузов
-                            ClearFields(); // Очистка полей ввода
-                            MessageBox.Show("Груз успешно обновлен.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                        else
-                        {
-                            MessageBox.Show("Груз не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Пожалуйста, выберите груз для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Заказ не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Некорректный номер заказа. Пожалуйста, введите целое число.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void btnRemoveCargo_Click(object sender, EventArgs e)
-        {
-            if (int.TryParse(txtOrderId.Text, out int orderId))
-            {
-                var order = OrderManager.GetOrders().FirstOrDefault(o => o.OrderId == orderId);
-                if (order != null)
-                {
-                    // Проверяем, что выбран груз
-                    if (dataGridViewCargo.SelectedRows.Count > 0)
-                    {
-                        var selectedRow = dataGridViewCargo.SelectedRows[0];
-                        int cargoId = (int)selectedRow.Cells["CargoId"].Value; // Получаем номер груза
-
-                        // Ищем груз по номеру
-                        var cargoToRemove = order.CargoList.FirstOrDefault(c => c.CargoId == cargoId);
-                        if (cargoToRemove != null)
-                        {
-                            order.CargoList.Remove(cargoToRemove); // Удаляем груз из списка
-                            LoadCargoForOrder(orderId); // Обновляем отображение грузов
-                            MessageBox.Show("Груз успешно удален.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                        else
-                        {
-                            MessageBox.Show("Груз не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Пожалуйста, выберите груз для удаления.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Заказ не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Некорректный номер заказа. Пожалуйста, введите целое число.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+        
     }
 }

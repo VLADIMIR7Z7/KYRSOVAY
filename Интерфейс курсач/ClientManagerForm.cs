@@ -58,7 +58,8 @@ namespace FreightTransportSystem
         private DataGridViewTextBoxColumn IssuedBy;
         private Button btnEditIndividualClient;
         private Button btnEditLegalEntityClient;
-        private Label label18;
+        private Button btnSaveIndividualClientChanges;
+        private Button btnSaveLegalEntityClientChanges;
         private DataGridView dgvLegalEntityClients;
 
         public ClientManagerForm()
@@ -93,7 +94,7 @@ namespace FreightTransportSystem
             txtPassportSeries.Clear();
             txtPassportNumber.Clear();
             txtIssuedBy.Clear();
-            txtIssueDate.Value = DateTime.Now; // Сброс даты
+            txtIssueDate.Value = DateTime.Now; 
         }
 
         private void ClearLegalEntityClientFields()
@@ -101,7 +102,7 @@ namespace FreightTransportSystem
             txtCompanyNameNEW.Clear();
             txtDirectorName.Clear();
             txtLegalAddress.Clear();
-            txtLegalEntityPhone.Clear(); // Изменено на txtLegalEntityPhone
+            txtLegalEntityPhone.Clear(); 
             txtBankName.Clear();
             txtAccountNumber.Clear();
             txtINN.Clear();
@@ -333,12 +334,13 @@ namespace FreightTransportSystem
             }
             else if (dgvLegalEntityClients.SelectedRows.Count > 0)
             {
+                //Получение выбранной строки 
                 var selectedRow = dgvLegalEntityClients.SelectedRows[0];
 
                 // Проверка наличия значения в ячейке "CompanyName"
                 if (selectedRow.Cells["CompanyNameNEW"].Value != null)
                 {
-                    string companyName = selectedRow.Cells["CompanyNameNEW"].Value.ToString();
+                    string companyName = selectedRow.Cells["CompanyNameNEW"].Value.ToString(); // Получение имени компании
 
                     // Запрос подтверждения удаления
                     DialogResult dialogResult = MessageBox.Show($"Вы уверены, что хотите удалить юридическое лицо с названием {companyName}?", "Подтверждение удаления", MessageBoxButtons.YesNo);
@@ -372,6 +374,294 @@ namespace FreightTransportSystem
             }
         }
 
+        private void btnEditIndividualClient_Click(object sender, EventArgs e)
+        {
+            // Проверка, выбрана ли хотя бы одна строка в DataGridView
+            if (dgvIndividualClients.SelectedRows.Count > 0)
+            {
+                // Получение первой выбранной строки
+                var selectedRow = dgvIndividualClients.SelectedRows[0];
+
+                // Проверка наличия значения в ячейке "ContactName"
+                if (selectedRow.Cells["ContactName"].Value != null)
+                {
+                    // Получение имени клиента из выбранной строки и преобразование его в строку
+                    string contactName = selectedRow.Cells["ContactName"].Value.ToString();
+
+                    // Поиск клиента по имени среди всех индивидуальных клиентов
+                    IndividualClient clientToEdit = ClientManager.GetClients()
+                        .OfType<IndividualClient>() // Фильтрация только физических лиц
+                        .FirstOrDefault(c => c.ContactName == contactName); // Поиск клиента с совпадающим именем
+
+                    // Проверка, найден ли клиент
+                    if (clientToEdit != null) // Если клиент найден
+                    {
+                        // Заполнение текстовых полей данными из объекта клиента
+                        txtContactName.Text = clientToEdit.ContactName; 
+                        txtPhone.Text = clientToEdit.Phone; 
+                        txtPassportSeries.Text = clientToEdit.PassportSeries; 
+                        txtPassportNumber.Text = clientToEdit.PassportNumber; 
+                        txtIssuedBy.Text = clientToEdit.IssuedBy; 
+                        txtIssueDate.Value = clientToEdit.IssueDate; 
+                    }
+                    else
+                    {
+                        MessageBox.Show("Клиент не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Выбранная строка пуста. Редактирование невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите клиента для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void btnEditLegalEntityClient_Click(object sender, EventArgs e)
+        {
+            // Проверка, выбрана ли хотя бы одна строка в DataGridView
+            if (dgvLegalEntityClients.SelectedRows.Count > 0)
+            {
+                // Получение первой выбранной строки
+                var selectedRow = dgvLegalEntityClients.SelectedRows[0];
+
+                // Проверка наличия значения в ячейке "CompanyNameNEW"
+                if (selectedRow.Cells["CompanyNameNEW"].Value != null)
+                {
+                    // Получение имени компании из выбранной строки и преобразование его в строку
+                    string companyName = selectedRow.Cells["CompanyNameNEW"].Value.ToString(); // Получение имени компании
+
+                    // Поиск клиента по имени компании среди всех юридических лиц
+                    LegalEntityClient clientToEdit = ClientManager.GetClients()
+                        .OfType<LegalEntityClient>() // Фильтрация только юридических лиц
+                        .FirstOrDefault(c => c.CompanyName == companyName); // Поиск клиента с совпадающим именем компании
+
+                    // Проверка, найден ли клиент
+                    if (clientToEdit != null) // Если клиент найден
+                    {
+                        // Заполнение текстовых полей данными из объекта клиента
+                        txtCompanyNameNEW.Text = clientToEdit.CompanyName; 
+                        txtDirectorName.Text = clientToEdit.DirectorName; 
+                        txtLegalAddress.Text = clientToEdit.LegalAddress; 
+                        txtLegalEntityPhone.Text = clientToEdit.Phone; 
+                        txtBankName.Text = clientToEdit.BankName; 
+                        txtAccountNumber.Text = clientToEdit.AccountNumber; 
+                        txtINN.Text = clientToEdit.INN; 
+                    }
+                    else
+                    {
+                        
+                        MessageBox.Show("Клиент не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    
+                    MessageBox.Show("Выбранная строка пуста. Редактирование невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                
+                MessageBox.Show("Пожалуйста, выберите клиента для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void btnSaveIndividualClientChanges_Click(object sender, EventArgs e)
+        {
+            // Проверка, выбрана ли хотя бы одна строка в DataGridView
+            if (dgvIndividualClients.SelectedRows.Count > 0)
+            {
+                // Получение первой выбранной строки
+                var selectedRow = dgvIndividualClients.SelectedRows[0];
+
+                // Проверка наличия значения в ячейке "ContactName"
+                if (selectedRow.Cells["ContactName"].Value != null)
+                {
+                    // Получение ФИО выбранного клиента и преобразование его в строку
+                    string contactName = selectedRow.Cells["ContactName"].Value.ToString();
+
+                    // Поиск клиента по ФИО среди всех индивидуальных клиентов
+                    IndividualClient clientToEdit = ClientManager.GetClients()
+                        .OfType<IndividualClient>() // Фильтрация только физических лиц
+                        .FirstOrDefault(c => c.ContactName == contactName); // Поиск клиента с совпадающим ФИО
+
+                    // Проверка, найден ли клиент
+                    if (clientToEdit != null) 
+                    {
+                        // Получение данных из полей ввода
+                        string phone = txtPhone.Text.Trim();
+                        string passportSeries = txtPassportSeries.Text.Trim(); 
+                        string passportNumber = txtPassportNumber.Text.Trim(); 
+                        string issuedBy = txtIssuedBy.Text.Trim(); 
+                        DateTime issueDate = txtIssueDate.Value; 
+
+                        List<string> errors = new List<string>();
+
+                        // Проверка заполненности полей
+                        if (string.IsNullOrWhiteSpace(contactName) || string.IsNullOrWhiteSpace(phone) ||
+                            string.IsNullOrWhiteSpace(passportSeries) || string.IsNullOrWhiteSpace(passportNumber) ||
+                            string.IsNullOrWhiteSpace(issuedBy))
+                        {
+                            errors.Add("Пожалуйста, заполните все поля для физического лица."); 
+                        }
+
+                        if (!IsValidContactName(contactName)) 
+                        {
+                            errors.Add("ФИО должно содержать только буквы и пробелы."); 
+                        }
+
+                        if (!IsValidPhone(phone)) 
+                        {
+                            errors.Add("Телефон должен содержать 11 цифр."); 
+                        }
+
+                        if (!IsValidPassportSeries(passportSeries)) 
+                        {
+                            errors.Add("Серия паспорта должна содержать 4 цифры."); 
+                        }
+
+                        if (!IsValidPassportNumber(passportNumber)) 
+                        {
+                            errors.Add("Номер паспорта должен содержать 10 цифр."); 
+                        }
+
+                        // Если есть ошибки, выводим их
+                        if (errors.Count > 0)
+                        {
+                            
+                            MessageBox.Show(string.Join(Environment.NewLine, errors), "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return; 
+                        }
+
+                        // Обновление данных клиента
+                        clientToEdit.ContactName = contactName; 
+                        clientToEdit.Phone = phone; 
+                        clientToEdit.PassportSeries = passportSeries; 
+                        clientToEdit.PassportNumber = passportNumber; 
+                        clientToEdit.IssuedBy = issuedBy; 
+                        clientToEdit.IssueDate = issueDate; 
+
+                        LoadClients(); // Обновление списка клиентов в интерфейсе
+                        ClearIndividualClientFields(); // Очистка полей ввода
+                                                       
+                        MessageBox.Show("Изменения успешно сохранены.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                       
+                        MessageBox.Show("Кли ент не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                  
+                    MessageBox.Show("Выбранная строка пуста. Сохранение невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                
+                MessageBox.Show("Пожалуйста, выберите клиента для сохранения изменений.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void btnSaveLegalEntityClientChanges_Click(object sender, EventArgs e)
+        {
+            if (dgvLegalEntityClients.SelectedRows.Count > 0) // Проверка, выбрана ли строка
+            {
+                // Получаем выбранную строку 
+                var selectedRow = dgvLegalEntityClients.SelectedRows[0];
+
+                // Проверка на выбор знаечния
+                if (selectedRow.Cells["CompanyNameNEW"].Value != null)
+                {
+                    string companyName = selectedRow.Cells["CompanyNameNEW"].Value.ToString(); // Полчение Имени
+                   // Поиск клиента по ФИО среди всех юр клиентов
+                    LegalEntityClient clientToEdit = ClientManager.GetClients()
+                        .OfType<LegalEntityClient>() // Фильтрация только юридических лиц
+                        .FirstOrDefault(c => c.CompanyName == companyName); // Поиск клиента с совпадающим именем компании
+
+                    if (clientToEdit != null) 
+                    {
+                        // Получение данных из полей ввода
+                        string directorName = txtDirectorName.Text.Trim();
+                        string legalAddress = txtLegalAddress.Text.Trim();
+                        string phone = txtLegalEntityPhone.Text.Trim();
+                        string bankName = txtBankName.Text.Trim();
+                        string accountNumber = txtAccountNumber.Text.Trim();
+                        string inn = txtINN.Text.Trim();
+
+                        List<string> errors = new List<string>();
+
+                        // Проверка заполненности полей
+                        if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(directorName) ||
+                            string.IsNullOrWhiteSpace(legalAddress) || string.IsNullOrWhiteSpace(phone) ||
+                            string.IsNullOrWhiteSpace(bankName) || string.IsNullOrWhiteSpace(accountNumber))
+                        {
+                            errors.Add("Пожалуйста, заполните все поля для юридического лица.");
+                        }
+
+                        // Проверка корректности ввода
+                        if (!IsValidINN(inn))
+                        {
+                            errors.Add("ИНН должен содержать 10 цифр.");
+                        }
+
+                        if (!IsValidPhone(phone))
+                        {
+                            errors.Add("Телефон должен содержать 11 цифр.");
+                        }
+
+                        if (!IsOnlyLetters(directorName))
+                        {
+                            errors.Add("ФИО директора должно содержать только буквы и пробелы.");
+                        }
+
+                        if (!IsValidAccountNumber(accountNumber))
+                        {
+                            errors.Add("Расчетный счет должен содержать 20 цифр.");
+                        }
+
+                        // Если есть ошибки, выводим их
+                        if (errors.Count > 0)
+                        {
+                            MessageBox.Show(string.Join(Environment.NewLine, errors), "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return; 
+                        }
+
+                        // Обновление данных клиента
+                        clientToEdit.CompanyName = companyName;
+                        clientToEdit.DirectorName = directorName;
+                        clientToEdit.LegalAddress = legalAddress;
+                        clientToEdit.Phone = phone;
+                        clientToEdit.BankName = bankName;
+                        clientToEdit.AccountNumber = accountNumber;
+                        clientToEdit.INN = inn;
+
+                        LoadClients(); // Обновление списка клиентов
+                        ClearLegalEntityClientFields(); // Очистка полей ввода
+                        MessageBox.Show("Изменения успешно сохранены.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Клиент не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Выбранная строка пуста. Сохранение невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите клиента для сохранения изменений.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
         // Обработчик события нажатия кнопки очистки полей
         private void btnClear_Click_1(object sender, EventArgs e)
         {
@@ -379,90 +669,7 @@ namespace FreightTransportSystem
             ClearLegalEntityClientFields(); // Очистка полей ввода юридического лица
         }
 
-        // Обработчик события нажатия на ячейку в таблице индивидуальных клиентов
-        private void dgvIndividualClients_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (dgvIndividualClients.SelectedRows.Count > 0)
-            {
-                var selectedRow = dgvIndividualClients.SelectedRows[0];
-
-                // Заполнение полей ввода данными из выбранной строки
-                if (selectedRow.Cells["ContactName"].Value != null)
-                    txtContactName.Text = selectedRow.Cells["ContactName"].Value.ToString();
-                else
-                    txtContactName.Clear();
-
-                if (selectedRow.Cells["Phone"].Value != null)
-                    txtPhone.Text = selectedRow.Cells["Phone"].Value.ToString();
-                else
-                    txtPhone.Clear();
-
-                if (selectedRow.Cells["PassportSeries"].Value != null)
-                    txtPassportSeries.Text = selectedRow.Cells["PassportSeries"].Value.ToString();
-                else
-                    txtPassportSeries.Clear();
-
-                if (selectedRow.Cells["PassportNumber"].Value != null)
-            txtPassportNumber.Text = selectedRow.Cells["PassportNumber"].Value.ToString();
-        else
-                    txtPassportNumber.Clear();
-
-                if (selectedRow.Cells["IssueDate"].Value != null)
-                    txtIssueDate.Value = DateTime.Parse(selectedRow.Cells["IssueDate"].Value.ToString());
-                else
-                    txtIssueDate.Value = DateTime.Now; // Устанавливаем текущее время, если значение отсутствует
-
-                if (selectedRow.Cells["IssuedBy"].Value != null)
-                    txtIssuedBy.Text = selectedRow.Cells["IssuedBy"].Value.ToString();
-                else
-                    txtIssuedBy.Clear();
-            }
-        }
-
-        private void dgvLegalEntityClients_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (dgvLegalEntityClients.SelectedRows.Count > 0)
-            {
-                var selectedRow = dgvLegalEntityClients.SelectedRows[0];
-
-                // Заполнение полей ввода данными из выбранной строки
-                if (selectedRow.Cells["CompanyNameNEW"].Value != null)
-                    txtCompanyNameNEW.Text = selectedRow.Cells["CompanyNameNEW"].Value.ToString();
-                else
-                    txtCompanyNameNEW.Clear();
-
-                if (selectedRow.Cells["DirectorName"].Value != null)
-                    txtDirectorName.Text = selectedRow.Cells["DirectorName"].Value.ToString();
-                else
-                    txtDirectorName.Clear();
-
-                if (selectedRow.Cells["LegalAddress"].Value != null)
-                    txtLegalAddress.Text = selectedRow.Cells["LegalAddress"].Value.ToString();
-                else
-                    txtLegalAddress.Clear();
-
-                if (selectedRow.Cells["LegalEntityPhone"].Value != null)
-                    txtLegalEntityPhone.Text = selectedRow.Cells["LegalEntityPhone"].Value.ToString();
-                else
-                    txtLegalEntityPhone.Clear();
-
-                if (selectedRow.Cells["BankName"].Value != null)
-                    txtBankName.Text = selectedRow.Cells["BankName"].Value.ToString();
-                else
-                    txtBankName.Clear();
-
-                if (selectedRow.Cells["AccountNumber"].Value != null)
-                    txtAccountNumber.Text = selectedRow.Cells["AccountNumber"].Value.ToString();
-                else
-                    txtAccountNumber.Clear();
-
-                if (selectedRow.Cells["INN"].Value != null)
-                    txtINN.Text = selectedRow.Cells["INN"].Value.ToString();
-                else
-                    txtINN.Clear();
-            }
-        }
-
+ 
         private void InitializeComponent()
         {
             this.dgvIndividualClients = new System.Windows.Forms.DataGridView();
@@ -516,7 +723,8 @@ namespace FreightTransportSystem
             this.txtLegalEntityPhone = new System.Windows.Forms.TextBox();
             this.btnEditIndividualClient = new System.Windows.Forms.Button();
             this.btnEditLegalEntityClient = new System.Windows.Forms.Button();
-            this.label18 = new System.Windows.Forms.Label();
+            this.btnSaveIndividualClientChanges = new System.Windows.Forms.Button();
+            this.btnSaveLegalEntityClientChanges = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvIndividualClients)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvLegalEntityClients)).BeginInit();
             this.SuspendLayout();
@@ -535,7 +743,7 @@ namespace FreightTransportSystem
             this.dgvIndividualClients.Name = "dgvIndividualClients";
             this.dgvIndividualClients.Size = new System.Drawing.Size(644, 256);
             this.dgvIndividualClients.TabIndex = 0;
-            this.dgvIndividualClients.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvIndividualClients_CellContentClick);
+            
             // 
             // ContactName
             // 
@@ -582,7 +790,6 @@ namespace FreightTransportSystem
             this.dgvLegalEntityClients.Name = "dgvLegalEntityClients";
             this.dgvLegalEntityClients.Size = new System.Drawing.Size(729, 264);
             this.dgvLegalEntityClients.TabIndex = 1;
-            this.dgvLegalEntityClients.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvLegalEntityClients_CellContentClick);
             // 
             // CompanyNameNEW
             // 
@@ -853,9 +1060,9 @@ namespace FreightTransportSystem
             // 
             // btnAddIndividualClient
             // 
-            this.btnAddIndividualClient.Location = new System.Drawing.Point(12, 9);
+            this.btnAddIndividualClient.Location = new System.Drawing.Point(12, 37);
             this.btnAddIndividualClient.Name = "btnAddIndividualClient";
-            this.btnAddIndividualClient.Size = new System.Drawing.Size(146, 70);
+            this.btnAddIndividualClient.Size = new System.Drawing.Size(146, 34);
             this.btnAddIndividualClient.TabIndex = 35;
             this.btnAddIndividualClient.Text = "Добавить физическое лицо";
             this.btnAddIndividualClient.UseVisualStyleBackColor = true;
@@ -863,9 +1070,9 @@ namespace FreightTransportSystem
             // 
             // btnAddLegalEntityClient
             // 
-            this.btnAddLegalEntityClient.Location = new System.Drawing.Point(12, 111);
+            this.btnAddLegalEntityClient.Location = new System.Drawing.Point(12, 85);
             this.btnAddLegalEntityClient.Name = "btnAddLegalEntityClient";
-            this.btnAddLegalEntityClient.Size = new System.Drawing.Size(146, 70);
+            this.btnAddLegalEntityClient.Size = new System.Drawing.Size(146, 40);
             this.btnAddLegalEntityClient.TabIndex = 36;
             this.btnAddLegalEntityClient.Text = "Добавить юридическое лицо";
             this.btnAddLegalEntityClient.UseVisualStyleBackColor = true;
@@ -873,9 +1080,9 @@ namespace FreightTransportSystem
             // 
             // btnRemoveClient
             // 
-            this.btnRemoveClient.Location = new System.Drawing.Point(12, 214);
+            this.btnRemoveClient.Location = new System.Drawing.Point(12, 157);
             this.btnRemoveClient.Name = "btnRemoveClient";
-            this.btnRemoveClient.Size = new System.Drawing.Size(146, 70);
+            this.btnRemoveClient.Size = new System.Drawing.Size(146, 44);
             this.btnRemoveClient.TabIndex = 37;
             this.btnRemoveClient.Text = "Удалить клиента";
             this.btnRemoveClient.UseVisualStyleBackColor = true;
@@ -883,9 +1090,9 @@ namespace FreightTransportSystem
             // 
             // btnClear
             // 
-            this.btnClear.Location = new System.Drawing.Point(12, 310);
+            this.btnClear.Location = new System.Drawing.Point(12, 234);
             this.btnClear.Name = "btnClear";
-            this.btnClear.Size = new System.Drawing.Size(146, 70);
+            this.btnClear.Size = new System.Drawing.Size(146, 24);
             this.btnClear.TabIndex = 38;
             this.btnClear.Text = "Очистить поля";
             this.btnClear.UseVisualStyleBackColor = true;
@@ -909,9 +1116,9 @@ namespace FreightTransportSystem
             // 
             // btnEditIndividualClient
             // 
-            this.btnEditIndividualClient.Location = new System.Drawing.Point(12, 409);
+            this.btnEditIndividualClient.Location = new System.Drawing.Point(12, 274);
             this.btnEditIndividualClient.Name = "btnEditIndividualClient";
-            this.btnEditIndividualClient.Size = new System.Drawing.Size(146, 57);
+            this.btnEditIndividualClient.Size = new System.Drawing.Size(146, 36);
             this.btnEditIndividualClient.TabIndex = 41;
             this.btnEditIndividualClient.Text = "Редактировать физ лицо";
             this.btnEditIndividualClient.UseVisualStyleBackColor = true;
@@ -919,29 +1126,39 @@ namespace FreightTransportSystem
             // 
             // btnEditLegalEntityClient
             // 
-            this.btnEditLegalEntityClient.Location = new System.Drawing.Point(12, 500);
+            this.btnEditLegalEntityClient.Location = new System.Drawing.Point(13, 367);
             this.btnEditLegalEntityClient.Name = "btnEditLegalEntityClient";
-            this.btnEditLegalEntityClient.Size = new System.Drawing.Size(146, 57);
+            this.btnEditLegalEntityClient.Size = new System.Drawing.Size(146, 40);
             this.btnEditLegalEntityClient.TabIndex = 42;
             this.btnEditLegalEntityClient.Text = "Редактировать юр лицо";
             this.btnEditLegalEntityClient.UseVisualStyleBackColor = true;
             this.btnEditLegalEntityClient.Click += new System.EventHandler(this.btnEditLegalEntityClient_Click);
             // 
-            // label18
+            // btnSaveIndividualClientChanges
             // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(12, 574);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(335, 65);
-            this.label18.TabIndex = 43;
-            this.label18.Text = "Для редатирования выберите клиента из списка\r\nДалее нажмите на столбец номер Фио " +
-    "или Название компании\r\nПосле чего в полях вы можете изменить нужную информацию\r\n" +
-    "Нажмите редактировать\r\n\r\n";
+            this.btnSaveIndividualClientChanges.Location = new System.Drawing.Point(13, 321);
+            this.btnSaveIndividualClientChanges.Name = "btnSaveIndividualClientChanges";
+            this.btnSaveIndividualClientChanges.Size = new System.Drawing.Size(145, 40);
+            this.btnSaveIndividualClientChanges.TabIndex = 43;
+            this.btnSaveIndividualClientChanges.Text = "Внести изменения для физ лица";
+            this.btnSaveIndividualClientChanges.UseVisualStyleBackColor = true;
+            this.btnSaveIndividualClientChanges.Click += new System.EventHandler(this.btnSaveIndividualClientChanges_Click);
+            // 
+            // btnSaveLegalEntityClientChanges
+            // 
+            this.btnSaveLegalEntityClientChanges.Location = new System.Drawing.Point(14, 426);
+            this.btnSaveLegalEntityClientChanges.Name = "btnSaveLegalEntityClientChanges";
+            this.btnSaveLegalEntityClientChanges.Size = new System.Drawing.Size(145, 41);
+            this.btnSaveLegalEntityClientChanges.TabIndex = 44;
+            this.btnSaveLegalEntityClientChanges.Text = "Внести изменения для юр лица";
+            this.btnSaveLegalEntityClientChanges.UseVisualStyleBackColor = true;
+            this.btnSaveLegalEntityClientChanges.Click += new System.EventHandler(this.btnSaveLegalEntityClientChanges_Click);
             // 
             // ClientManagerForm
             // 
             this.ClientSize = new System.Drawing.Size(1372, 644);
-            this.Controls.Add(this.label18);
+            this.Controls.Add(this.btnSaveLegalEntityClientChanges);
+            this.Controls.Add(this.btnSaveIndividualClientChanges);
             this.Controls.Add(this.btnEditLegalEntityClient);
             this.Controls.Add(this.btnEditIndividualClient);
             this.Controls.Add(this.label17);
@@ -987,185 +1204,6 @@ namespace FreightTransportSystem
             this.PerformLayout();
 
         }
-
-        private void btnEditIndividualClient_Click(object sender, EventArgs e)
-        {
-            if (dgvIndividualClients.SelectedRows.Count > 0) // Проверка, выбрана ли строка
-            {
-                var selectedRow = dgvIndividualClients.SelectedRows[0]; // Получение выбранной строки
-
-                // Проверка, что все поля заполнены
-                if (string.IsNullOrWhiteSpace(txtContactName.Text) ||
-                    string.IsNullOrWhiteSpace(txtPhone.Text) ||
-                    string.IsNullOrWhiteSpace(txtPassportSeries.Text) ||
-                    string.IsNullOrWhiteSpace(txtPassportNumber.Text) ||
-                    string.IsNullOrWhiteSpace(txtIssuedBy.Text))
-                {
-                    MessageBox.Show("Пожалуйста, заполните все поля для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return; // Прерываем выполнение метода, если есть пустые поля
-                }
-
-                // Получение ФИО выбранного клиента
-                string contactName = selectedRow.Cells["ContactName"].Value.ToString();
-                IndividualClient clientToEdit = ClientManager.GetClients()
-                    .OfType<IndividualClient>() // Фильтрация только физических лиц
-                    .FirstOrDefault(c => c.ContactName == contactName);
-
-                if (clientToEdit != null) // Если клиент найден
-                {
-                    // Считывание данных из полей ввода
-                    string phone = txtPhone.Text.Trim();
-                    string passportSeries = txtPassportSeries.Text.Trim();
-                    string passportNumber = txtPassportNumber.Text.Trim();
-                    string issuedBy = txtIssuedBy.Text.Trim();
-                    DateTime issueDate = txtIssueDate.Value;
-
-                    List<string> errors = new List<string>(); // Список для хранения ошибок валидации
-
-                    // Проверка корректности ввода
-                    if (!IsValidContactName(contactName))
-                    {
-                        throw new Exception("ФИО должно содержать только буквы и пробелы.");
-                    }
-
-                    if (!IsValidPhone(phone))
-                    {
-                        throw new Exception("Телефон должен содержать 11 цифр.");
-                    }
-
-                    if (!IsValidPassportSeries(passportSeries)) // Изменено на проверку серии паспорта
-                    {
-                        throw new Exception("Серия паспорта должна содержать 4 цифры.");
-                    }
-
-                    if (!IsValidPassportNumber(passportNumber))
-                    {
-                        throw new Exception("Номер паспорта должен содержать 10 цифр.");
-                    }
-
-                    // Если есть ошибки, выводим их в сообщении
-                    if (errors.Count > 0)
-                    {
-                        string errorMessage = string.Join(Environment.NewLine, errors);
-                        MessageBox.Show(errorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return; // Прерываем выполнение метода, если есть ошибки
-                    }
-
-                    // Обновление информации о клиенте
-                    clientToEdit.ContactName = txtContactName.Text.Trim();
-                    clientToEdit.Phone = phone;
-                    clientToEdit.PassportSeries = passportSeries;
-                    clientToEdit.PassportNumber = passportNumber;
-                    clientToEdit.IssuedBy = issuedBy;
-                    clientToEdit.IssueDate = issueDate;
-
-                    LoadClients(); // Обновление списка клиентов в DataGridView
-                    ClearIndividualClientFields(); // Очистка полей ввода
-                }
-                else
-                {
-                    MessageBox.Show("Клиент не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Пожалуйста, выберите клиента для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
-
-        private void btnEditLegalEntityClient_Click(object sender, EventArgs e)
-        {
-            if (dgvLegalEntityClients.SelectedRows.Count > 0) // Проверка, выбрана ли строка
-            {
-                var selectedRow = dgvLegalEntityClients.SelectedRows[0]; // Получение выбранной строки
-
-                // Проверка, что все поля заполнены
-                if (string.IsNullOrWhiteSpace(txtCompanyNameNEW.Text) ||
-                    string.IsNullOrWhiteSpace(txtDirectorName.Text) ||
-                    string.IsNullOrWhiteSpace(txtLegalAddress.Text) ||
-                    string.IsNullOrWhiteSpace(txtLegalEntityPhone.Text) ||
-                    string.IsNullOrWhiteSpace(txtBankName.Text) ||
-                    string.IsNullOrWhiteSpace(txtAccountNumber.Text) ||
-                    string.IsNullOrWhiteSpace(txtINN.Text))
-                {
-                    MessageBox.Show("Пожалуйста, заполните все поля для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return; // Прерываем выполнение метода, если есть пустые поля
-                }
-
-                // Получение названия компании выбранного клиента
-                string companyName = selectedRow.Cells["CompanyNameNEW"].Value.ToString();
-                LegalEntityClient clientToEdit = ClientManager.GetClients()
-                    .OfType<LegalEntityClient>() // Фильтрация только юридических лиц
-                    .FirstOrDefault(c => c.CompanyName == companyName);
-
-                if (clientToEdit != null) // Если клиент найден
-                {
-                    // Считывание данных из полей ввода
-                    string newCompanyName = txtCompanyNameNEW.Text.Trim();
-                    string directorName = txtDirectorName.Text.Trim();
-                    string legalAddress = txtLegalAddress.Text.Trim();
-                    string phone = txtLegalEntityPhone.Text.Trim();
-                    string bankName = txtBankName.Text.Trim();
-                    string accountNumber = txtAccountNumber.Text.Trim();
-                    string inn = txtINN.Text.Trim();
-
-                    List<string> errors = new List<string>(); // Список для хранения ошибок валидации
-
-                    if (!IsValidINN(inn))
-                    {
-                        throw new Exception("ИНН должен содержать 10 цифр.");
-                    }
-
-                    // Проверка корректности ввода
-                    if (!IsValidPhone(phone))
-                    {
-                        throw new Exception("Телефон должен содержать 11 цифр.");
-                    }
-
-                    if (!IsOnlyLetters(directorName) && !directorName.All(c => char.IsLetter(c) || char.IsWhiteSpace(c)))
-                    {
-                        throw new Exception("ФИО директора должно содержать только буквы и пробелы.");
-                    }
-
-                    if (!IsValidAccountNumber(accountNumber))
-                    {
-                        throw new Exception("Расчетный счет должен содержать 20 цифр.");
-                    }
-
-                    if (!IsOnlyDigits(inn))
-                    {
-                        throw new Exception("ИНН должен содержать только цифры.");
-                    }
-
-                    // Если есть ошибки, выводим их в сообщении
-                    if (errors.Count > 0)
-                    {
-                        string errorMessage = string.Join(Environment.NewLine, errors);
-                        MessageBox.Show(errorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return; // Прерываем выполнение метода, если есть ошибки
-                    }
-
-                    // Обновление информации о клиенте
-                    clientToEdit.CompanyName = newCompanyName; // Обновление названия компании
-                    clientToEdit.DirectorName = directorName;
-                    clientToEdit.LegalAddress = legalAddress;
-                    clientToEdit.Phone = phone;
-                    clientToEdit.BankName = bankName;
-                    clientToEdit.AccountNumber = accountNumber;
-                    clientToEdit.INN = inn;
-
-                    LoadClients(); // Обновление списка клиентов в DataGridView
-                    ClearLegalEntityClientFields(); // Очистка полей ввода
-                }
-                else
-                {
-                    MessageBox.Show("Клиент не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Пожалуйста, выберите клиента для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
+ 
     }
 }

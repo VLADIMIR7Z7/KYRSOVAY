@@ -38,10 +38,12 @@ namespace FreightTransportSystem
         private Button btnEditTrip;
         private TextBox txtDriverFullName;
         private Label label4;
-        private Label label2;
         private Label label5;
         private Label label6;
         private Label label7;
+        private Button btnSaveTripChanges;
+        private Button btnSelectCar;
+        private Button button2;
         private DataGridView dataGridViewSelectedTrips;
 
         // Конструктор формы
@@ -229,7 +231,7 @@ namespace FreightTransportSystem
             txtLicensePlate.Clear(); // Очистка поля для номера автомобиля
             txtDriverFullName.Clear(); // Очистка поля для табельного номера водителя
             dtpArrivalTime.Value = DateTime.Now; // Сброс даты на текущее время
-           
+
         }
 
         // Метод для обработки нажатия кнопки "Очистить поля"
@@ -238,47 +240,158 @@ namespace FreightTransportSystem
             ClearTextFields(); // Вызов метода очистки текстовых полей
         }
 
-        // Метод для обработки нажатия на ячейку в таблице выбранных поездок
-        private void dataGridViewSelectedTrips_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void btnEditTrip_Click(object sender, EventArgs e)
         {
             if (dataGridViewSelectedTrips.SelectedRows.Count > 0) // Проверка, выбрана ли строка
             {
                 var selectedRow = dataGridViewSelectedTrips.SelectedRows[0];
 
-                // Заполняем текстовые поля данными из выбранной строки
-                txtLicensePlate.Text = selectedRow.Cells["Nomer"].Value?.ToString() ?? string.Empty; // Номер автомобиля
-                txtDriverFullName.Text = selectedRow.Cells["driver"].Value?.ToString() ?? string.Empty; // ФИО водителя
-                dtpArrivalTime.Value = DateTime.TryParse(selectedRow.Cells["arrivalTime"].Value?.ToString(), out DateTime arrivalTime) ? arrivalTime : DateTime.Now; // Дата прибытия
-            }
-        }
+                // Получаем номер заказа из выбранной строки
+                string orderNumber = selectedRow.Cells["orderNumber"].Value?.ToString();
 
-        // Метод для обработки нажатия на ячейку в таблице автомобилей
-        private void dataGridViewCars_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (dataGridViewCars.SelectedRows.Count > 0) // Проверка, выбрана ли строка
+                // Проверяем, что номер заказа не пустой
+                if (!string.IsNullOrWhiteSpace(orderNumber))
+                {
+                    Trip tripToEdit = TripManager.GetTrips().FirstOrDefault(t => t.OrderNumber == orderNumber); // Поиск рейса по номеру
+
+                    if (tripToEdit != null) // Если рейс найден
+                    {
+                        // Заполнение полей данными из объекта
+                        txtLicensePlate.Text = tripToEdit.LicensePlate;
+                        txtDriverFullName.Text = tripToEdit.DriverFullName;
+                        dtpArrivalTime.Value = tripToEdit.ArrivalTime; // Установка даты прибытия
+                    }
+                    else
+                    {
+                        MessageBox.Show("Рейс не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Выбранная строка пуста. Редактирование невозможно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
             {
-                var selectedRow = dataGridViewCars.SelectedRows[0];
-
-                // Заполняем поле номера автомобиля данными из выбранной строки
-                txtLicensePlate.Text = selectedRow.Cells["licensePlate"].Value?.ToString() ?? string.Empty; // Номер автомобиля
+                MessageBox.Show("Пожалуйста, выберите рейс для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
-        // Метод для обработки нажатия на ячейку в таблице водителей
-        private void dataGridViewDrivers_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void btnSaveTripChanges_Click(object sender, EventArgs e)
         {
-            if (dataGridViewDrivers.SelectedRows.Count > 0) // Проверка, выбрана ли строка
+            if (dataGridViewSelectedTrips.SelectedRows.Count > 0) // Проверка, выбрана ли строка
             {
-                var selectedRow = dataGridViewDrivers.SelectedRows[0];
+                var selectedRow = dataGridViewSelectedTrips.SelectedRows[0];
 
-                // Заполняем поле табельного номера и ФИО водителя данными из выбранной строки
-                txtDriverFullName.Text = selectedRow.Cells["employeeNumber"].Value?.ToString() ?? string.Empty; // Табельный номер
-                                                                                                              // Здесь вы можете добавить логику для отображения ФИО, если у вас есть отдельное поле для этого
+                // Получение номера заказа
+                string orderNumber = selectedRow.Cells["orderNumber"].Value?.ToString();
+
+                if (!string.IsNullOrWhiteSpace(orderNumber))
+                {
+                    Trip tripToEdit = TripManager.GetTrips().FirstOrDefault(t => t.OrderNumber == orderNumber); // Поиск рейса по номеру
+
+                    if (tripToEdit != null) // Если рейс найден
+                    {
+                        // Получение данных из полей ввода
+                        string licensePlate = txtLicensePlate.Text.Trim();
+                        string driverFullName = txtDriverFullName.Text.Trim();
+                        DateTime arrivalTime = dtpArrivalTime.Value;
+
+                        List<string> errors = new List<string>(); // Список для хранения ошибок
+
+                        // Проверка, что все поля заполнены
+                        if (string.IsNullOrWhiteSpace(licensePlate) || string.IsNullOrWhiteSpace(driverFullName))
+                        {
+                            errors.Add("Пожалуйста, заполните все поля для сохранения изменений.");
+                        }
+
+                        // Проверка существования автомобиля
+                        if (!FleetManager.GetCars().Any(car => car.LicensePlate == licensePlate))
+                        {
+                            errors.Add("Автомобиль с таким номером не существует.");
+                        }
+
+                        // Проверка существования водителя
+                        var driver = DriverManager.GetDrivers().FirstOrDefault(d => d.FullName == driverFullName); // Используем ФИО
+                        if (driver == null)
+                        {
+                            errors.Add("Водитель с таким ФИО не существует.");
+                        }
+
+                        // Проверка на дубликаты по номеру заказа
+                        if (TripManager.GetTrips().Any(trip => trip.OrderNumber == orderNumber && trip.OrderNumber != tripToEdit.OrderNumber))
+                        {
+                            errors.Add("Поездка с таким номером заказа уже существует.");
+                        }
+
+                        // Если есть ошибки, выводим их
+                        if (errors.Count > 0)
+                        {
+                            string errorMessage = string.Join(Environment.NewLine, errors);
+                            MessageBox.Show(errorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return; // Прерываем выполнение метода, если есть ошибки
+                        }
+
+                        // Проверка на изменения
+                        if (licensePlate != tripToEdit.LicensePlate ||
+                            driverFullName != tripToEdit.DriverFullName ||
+                            arrivalTime != tripToEdit.ArrivalTime)
+                        {
+                            // Обновление данных рейса
+                            tripToEdit.LicensePlate = licensePlate;
+                            tripToEdit.DriverFullName = driverFullName;
+                            tripToEdit.ArrivalTime = arrivalTime;
+
+                            LoadTrips(); // Обновление списка рейсов
+                            ClearTextFields(); // Очистка полей ввода
+                            MessageBox.Show("Изменения рейса успешно сохранены.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Нет изменений для сохранения.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Рейс не найден.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Пожалуйста, выберите рейс для сохранения изменений.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите рейс для сохранения изменений.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
+        private void btnSelectCar_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewCars.SelectedRows.Count > 0) // Проверка, выбрана ли строка в таблице автомобилей
+            {
+                var selectedRow = dataGridViewCars.SelectedRows[0]; // Получение выбранной строки
+                txtLicensePlate.Text = selectedRow.Cells["licensePlate"].Value?.ToString() ?? string.Empty; // Установка номера автомобиля
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите автомобиль из списка.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
 
-
+        private void btnSelectDriver_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewDrivers.SelectedRows.Count > 0) // Проверка, выбрана ли строка в таблице водителей
+            {
+                var selectedRow = dataGridViewDrivers.SelectedRows[0]; // Получение выбранной строки
+                txtDriverFullName.Text = selectedRow.Cells["fullName"].Value?.ToString() ?? string.Empty; // Установка ФИО водителя
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите водителя из списка.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
 
         private void InitializeComponent()
         {
@@ -313,10 +426,12 @@ namespace FreightTransportSystem
             this.btnEditTrip = new System.Windows.Forms.Button();
             this.txtDriverFullName = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
+            this.btnSaveTripChanges = new System.Windows.Forms.Button();
+            this.btnSelectCar = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewSelectedTrips)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewCars)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDrivers)).BeginInit();
@@ -335,7 +450,7 @@ namespace FreightTransportSystem
             this.dataGridViewSelectedTrips.RowHeadersWidth = 51;
             this.dataGridViewSelectedTrips.Size = new System.Drawing.Size(445, 456);
             this.dataGridViewSelectedTrips.TabIndex = 0;
-            this.dataGridViewSelectedTrips.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewSelectedTrips_CellContentClick);
+           
             // 
             // Nomer
             // 
@@ -382,7 +497,7 @@ namespace FreightTransportSystem
             this.dataGridViewCars.RowHeadersWidth = 51;
             this.dataGridViewCars.Size = new System.Drawing.Size(408, 196);
             this.dataGridViewCars.TabIndex = 1;
-            this.dataGridViewCars.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewCars_CellContentClick);
+         
             // 
             // licensePlate
             // 
@@ -455,7 +570,7 @@ namespace FreightTransportSystem
             this.dataGridViewDrivers.RowHeadersWidth = 51;
             this.dataGridViewDrivers.Size = new System.Drawing.Size(408, 181);
             this.dataGridViewDrivers.TabIndex = 2;
-            this.dataGridViewDrivers.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewDrivers_CellContentClick);
+           
             // 
             // fullName
             // 
@@ -536,7 +651,7 @@ namespace FreightTransportSystem
             // 
             this.btnPlanTrip.Location = new System.Drawing.Point(54, 40);
             this.btnPlanTrip.Name = "btnPlanTrip";
-            this.btnPlanTrip.Size = new System.Drawing.Size(159, 88);
+            this.btnPlanTrip.Size = new System.Drawing.Size(159, 56);
             this.btnPlanTrip.TabIndex = 9;
             this.btnPlanTrip.Text = "Спланировать рейс\r\n\r\n";
             this.btnPlanTrip.UseVisualStyleBackColor = true;
@@ -544,9 +659,9 @@ namespace FreightTransportSystem
             // 
             // btnClearFields
             // 
-            this.btnClearFields.Location = new System.Drawing.Point(54, 204);
+            this.btnClearFields.Location = new System.Drawing.Point(54, 122);
             this.btnClearFields.Name = "btnClearFields";
-            this.btnClearFields.Size = new System.Drawing.Size(159, 77);
+            this.btnClearFields.Size = new System.Drawing.Size(159, 48);
             this.btnClearFields.TabIndex = 10;
             this.btnClearFields.Text = "Очистить поля";
             this.btnClearFields.UseVisualStyleBackColor = true;
@@ -554,9 +669,9 @@ namespace FreightTransportSystem
             // 
             // btnDeleteTrip
             // 
-            this.btnDeleteTrip.Location = new System.Drawing.Point(54, 358);
+            this.btnDeleteTrip.Location = new System.Drawing.Point(54, 199);
             this.btnDeleteTrip.Name = "btnDeleteTrip";
-            this.btnDeleteTrip.Size = new System.Drawing.Size(159, 85);
+            this.btnDeleteTrip.Size = new System.Drawing.Size(159, 53);
             this.btnDeleteTrip.TabIndex = 11;
             this.btnDeleteTrip.Text = "Удалить";
             this.btnDeleteTrip.UseVisualStyleBackColor = true;
@@ -564,9 +679,9 @@ namespace FreightTransportSystem
             // 
             // btnEditTrip
             // 
-            this.btnEditTrip.Location = new System.Drawing.Point(54, 492);
+            this.btnEditTrip.Location = new System.Drawing.Point(54, 274);
             this.btnEditTrip.Name = "btnEditTrip";
-            this.btnEditTrip.Size = new System.Drawing.Size(159, 72);
+            this.btnEditTrip.Size = new System.Drawing.Size(159, 56);
             this.btnEditTrip.TabIndex = 12;
             this.btnEditTrip.Text = "Редактировать рейс";
             this.btnEditTrip.UseVisualStyleBackColor = true;
@@ -587,17 +702,6 @@ namespace FreightTransportSystem
             this.label4.Size = new System.Drawing.Size(132, 13);
             this.label4.TabIndex = 14;
             this.label4.Text = "Введите ФИО водителя:";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(54, 567);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(326, 65);
-            this.label2.TabIndex = 15;
-            this.label2.Text = "Для редатирования выберите рейс из списка\r\nДалее нажмите на столбец номер автомоб" +
-    "иля\r\nПосле чего в полях вы можете изменить нужную информацию\r\nНажмите редактиров" +
-    "ать\r\n\r\n";
             // 
             // label5
             // 
@@ -629,13 +733,45 @@ namespace FreightTransportSystem
             this.label7.TabIndex = 18;
             this.label7.Text = "Список рейсов:";
             // 
+            // btnSaveTripChanges
+            // 
+            this.btnSaveTripChanges.Location = new System.Drawing.Point(54, 355);
+            this.btnSaveTripChanges.Name = "btnSaveTripChanges";
+            this.btnSaveTripChanges.Size = new System.Drawing.Size(159, 23);
+            this.btnSaveTripChanges.TabIndex = 19;
+            this.btnSaveTripChanges.Text = "Сохранить изменения";
+            this.btnSaveTripChanges.UseVisualStyleBackColor = true;
+            this.btnSaveTripChanges.Click += new System.EventHandler(this.btnSaveTripChanges_Click);
+            // 
+            // btnSelectCar
+            // 
+            this.btnSelectCar.Location = new System.Drawing.Point(298, 114);
+            this.btnSelectCar.Name = "btnSelectCar";
+            this.btnSelectCar.Size = new System.Drawing.Size(143, 23);
+            this.btnSelectCar.TabIndex = 20;
+            this.btnSelectCar.Text = "Выбрать авто";
+            this.btnSelectCar.UseVisualStyleBackColor = true;
+            this.btnSelectCar.Click += new System.EventHandler(this.btnSelectCar_Click);
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(298, 213);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(143, 23);
+            this.button2.TabIndex = 21;
+            this.button2.Text = "Выбрать водителя";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.btnSelectDriver_Click);
+            // 
             // TripManagerForm
             // 
             this.ClientSize = new System.Drawing.Size(1432, 633);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.btnSelectCar);
+            this.Controls.Add(this.btnSaveTripChanges);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
-            this.Controls.Add(this.label2);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.txtDriverFullName);
             this.Controls.Add(this.btnEditTrip);
@@ -658,70 +794,6 @@ namespace FreightTransportSystem
 
         }
 
-        private void btnEditTrip_Click(object sender, EventArgs e)
-        {
-            // Проверяем, что выбран рейс
-            if (dataGridViewSelectedTrips.SelectedRows.Count > 0) // Проверка, выбрана ли строка
-            {
-                var selectedRow = dataGridViewSelectedTrips.SelectedRows[0];
-
-                // Получаем номер заказа из выбранной строки
-                string orderNumber = selectedRow.Cells["orderNumber"].Value?.ToString();
-
-                // Проверяем, что все поля заполнены
-                if (string.IsNullOrWhiteSpace(txtLicensePlate.Text) || string.IsNullOrWhiteSpace(txtDriverFullName.Text))
-                {
-                    MessageBox.Show("Пожалуйста, заполните все поля для редактирования рейса.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return; // Прерываем выполнение метода, если есть ошибки
-                }
-
-                List<string> errors = new List<string>();
-
-                // Проверка существования автомобиля
-                if (!FleetManager.GetCars().Any(car => car.LicensePlate == txtLicensePlate.Text))
-                {
-                    errors.Add("Автомобиль с таким номером не существует.");
-                }
-
-                // Проверка существования водителя
-                var driver = DriverManager.GetDrivers().FirstOrDefault(d => d.FullName == txtDriverFullName.Text);
-                if (driver == null)
-                {
-                    errors.Add("Водитель с таким ФИО не существует.");
-                }
-
-                // Проверка на дубликаты по номеру заказа
-                if (TripManager.GetTrips().Any(trip => trip.OrderNumber == orderNumber && trip.OrderNumber != orderNumber))
-                {
-                    errors.Add("Поездка с таким номером заказа уже существует.");
-                }
-
-                // Если есть ошибки, выводим их
-                if (errors.Count > 0)
-                {
-                    MessageBox.Show(string.Join(Environment.NewLine, errors), "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return; // Прерываем выполнение метода, если есть ошибки
-                }
-
-                // Обновление существующей поездки
-                Trip existingTrip = TripManager.GetTrips().FirstOrDefault(t => t.OrderNumber == orderNumber);
-                if (existingTrip != null)
-                {
-                    existingTrip.LicensePlate = txtLicensePlate.Text; // Обновляем номер автомобиля
-                    existingTrip.ArrivalTime = dtpArrivalTime.Value; // Обновляем дату прибытия
-                    existingTrip.DriverFullName = driver.FullName; // Обновляем ФИО водителя
-                }
-
-                // Обновление списка поездок в DataGridView
-                LoadTrips(); // Обновляем список поездок
-
-                // Очистка текстовых полей
-                ClearTextFields();
-            }
-            else
-            {
-                MessageBox.Show("Пожалуйста, выберите рейс для редактирования.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
+        
     }
 }
